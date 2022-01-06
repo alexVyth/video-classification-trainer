@@ -1,13 +1,11 @@
-from abc import ABC
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
 
 class ScoreLoader(ABC):
-
     @abstractmethod
-    def read(self):
+    def read(self) -> None:
         pass
 
     @abstractmethod
-    def downscale(self):
+    def downscale(self) -> None:
         pass

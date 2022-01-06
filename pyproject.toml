@@ -5,19 +5,33 @@ description = ""
 authors = ["Alexandros Vythoulkas <alvythoulkas@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.9"
-torch = "^1.10.0"
-torchvision = "^0.11.1"
+python = "^3.10"
+numpy = "^1.22.0"
+opencv-python = "^4.5.5"
 
 [tool.poetry.dev-dependencies]
-pytest = "^5.2"
-isort = "^5.10.0"
-black = "^21.10b0"
-pre-commit = "^2.15.0"
+pytest = "^6.2.5"
+isort = "^5.10.1"
+black = "^21.12b0"
+pre-commit = "^2.16.0"
+rope = "^0.22.0"
+mypy = "^0.930"
+pylint = "^2.12.2"
+flake8 = "^4.0.1"
+autoflake = "^1.4"
+pyupgrade = "^2.31.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.isort]
+line_length=99
 profile = "black"
+
+[tool.black]
+line-length = 99
+skip-string-normalization = 1
+
+[tool.mypy]
+strict = true
