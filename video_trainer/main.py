@@ -26,7 +26,7 @@ def load_video_clip(video_id: int, start_frame: int, duration: int) -> torch.Ten
         convert_frame_to_second(start_frame + duration, frames_per_second) - 1 / frames_per_second
     )
     video, _, _ = torchvision.io.read_video(
-        os.path.join('/dataset', 'ELIDEK', 'inputs', f'{video_id}.MP4'),
+        os.path.join('/dataset', 'ELIDEK', 'videos', f'{video_id}.mp4'),
         start_time,
         end_time,
         pts_unit='sec',
@@ -43,7 +43,8 @@ def main() -> None:
     video_id = 1
     start_frame = 10
     duration = 11
-    load_video_clip(video_id, start_frame, start_frame + duration)
+    video = load_video_clip(video_id, start_frame, start_frame + duration)
+    print(video.size())
 
 
 if __name__ == '__main__':
