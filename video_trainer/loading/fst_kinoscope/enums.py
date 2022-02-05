@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Dict
 
 
 class FstCategory(Enum):
@@ -17,7 +18,7 @@ class Color(Enum):
     GREEN = (0, 255, 0)
 
 
-FST_CATEGORIES_COLOR_MAPPING: dict[Color, FstCategory] = {
+FST_CATEGORIES_COLOR_MAPPING: Dict[Color, FstCategory] = {
     Color.BLUE: FstCategory.IMMOBILITY,
     Color.RED: FstCategory.SWIMMING,
     Color.BLACK: FstCategory.CLIMBING,

@@ -1,6 +1,7 @@
 import glob
 import re
 import subprocess
+from typing import Tuple
 
 import cv2
 from numpy.typing import ArrayLike
@@ -18,7 +19,7 @@ def get_video_frame(directory: str) -> ArrayLike:
     return image
 
 
-def get_roi(image: ArrayLike) -> tuple[int, int, int, int]:
+def get_roi(image: ArrayLike) -> Tuple[int, int, int, int]:
     roi = cv2.selectROI(image)
     cv2.destroyAllWindows()
     return roi  # type: ignore
@@ -30,7 +31,7 @@ def get_video_destination(video_source: str) -> str:
     return re.sub(pattern, '', video_destination)
 
 
-def crop_video(video_source: str, video_destination: str, roi: tuple[int, int, int, int]) -> None:
+def crop_video(video_source: str, video_destination: str, roi: Tuple[int, int, int, int]) -> None:
     x, y, width, height = roi
     command = (
         f'ffmpeg -hwaccel cuda -i {video_source} '
