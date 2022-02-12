@@ -8,6 +8,10 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     python3.8 \
     python3-pip \
     python3-setuptools \
+    python3-setuptools \
+    ffmpeg \
+    libsm6 \
+    libxext6 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 RUN pip3 install --upgrade pip
