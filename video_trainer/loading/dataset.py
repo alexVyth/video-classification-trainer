@@ -1,45 +1,40 @@
 import math
 import os
 from dataclasses import dataclass
+from typing import List
 
 import cv2 as cv
 import numpy
 from numpy.typing import ArrayLike
 from torch.utils.data import Dataset
 
-from data.video_shift_sync import VIDEO_SYNC
+from data.video_shift_sync import VIDEO_METADATA, VideoData
 from video_trainer.loading.load_video import load_video_clip
 
 ANNOTATION_COLOR_TO_CATEGORY = {
-    0: '1',
-    95: '2',
-    147: '3',
-    241: '4',
-    50: '0',
+    0: 1,
+    95: 2,
+    147: 3,
+    241: 4,
+    50: 0,
 }
 
 
 @dataclass
 class VideoSample:
-    video_id: int
+    dataset: str
+    video_id: str
     start_frame: int
     label: int
-
-
-def shift_array(array: ArrayLike, shift_magnitude: int) -> ArrayLike:
-    return numpy.concatenate((numpy.zeros(shift_magnitude, dtype=numpy.uint8), array))
 
 
 class FstDataset(Dataset):
     def __init__(
         self,
-        directory: str = os.path.join('..', 'dataset', 'ELIDEK'),
         duration: int = 11,
     ):
-        self.video_directory = os.path.join(directory, 'videos')
-        self.labels_directory = os.path.join(directory, 'labels')
         self.duration = duration
-        self.fps = 25
+        self.sample_median_frame = math.ceil(self.duration / 2)
         self.samples = self._create_samples()
 
     def __getitem__(self, index: int) -> ArrayLike:
@@ -52,30 +47,41 @@ class FstDataset(Dataset):
     def __len__(self) -> int:
         return len(self.samples)
 
-    def _preprocess_annotation(self, label_directory: ArrayLike, shift: int) -> ArrayLike:
-        annotated_frames = 300 * self.fps
-        annotation = cv.imread(label_directory, 0)[25, :]
+    def _create_samples(self) -> List[ArrayLike]:
+        samples = []
+        for video_metadata in VIDEO_METADATA:
+            first_index = video_metadata.first_frame
+            last_index = video_metadata.last_frame - self.duration
+
+            annotation = self._get_annotation(video_metadata)
+
+            for frame in range(first_index, last_index, self.duration):
+                category = annotation[frame + self.sample_median_frame]
+                label = ANNOTATION_COLOR_TO_CATEGORY[category]
+                video_sample = VideoSample(
+                    dataset=video_metadata.dataset,
+                    video_id=video_metadata.id,
+                    start_frame=frame,
+                    label=label,
+                )
+                samples.append(video_sample)
+        return samples
+
+    def _get_annotation(self, video_metadata: VideoData) -> List[int]:
+        label_dir = os.path.join(
+            '..', 'dataset', video_metadata.dataset, 'labels', f'{video_metadata.id}.png'
+        )
+        return self._preprocess_annotation(label_dir, video_metadata)
+
+    def _preprocess_annotation(self, label_dir: ArrayLike, video_metadata: VideoData) -> List[int]:
+        annotated_frames = 300 * video_metadata.fps
+        annotation = cv.imread(label_dir, 0)[25, :]
         annotation = cv.resize(
             annotation, dsize=(1, annotated_frames), interpolation=cv.INTER_NEAREST
         )[:, 0]
-        annotation = shift_array(annotation, shift)
-        return annotation
+        annotation = self._shift_array(annotation, video_metadata.first_frame)
+        return annotation  # type: ignore
 
-    def _create_samples(self) -> ArrayLike:
-        samples = []
-        for video_id in VIDEO_SYNC.keys():
-            label_path = f'../dataset/ELIDEK/labels/{video_id}.png'
-            first_frame = VIDEO_SYNC[video_id]
-            last_frame = first_frame + 300 * self.fps - self.duration
-            annotation = self._preprocess_annotation(label_path, first_frame)
-            label_index = math.ceil(self.duration)
-            for frame in range(first_frame, last_frame, self.duration):
-                category = annotation[frame + label_index]
-                label = ANNOTATION_COLOR_TO_CATEGORY[category]
-                video_object = VideoSample(
-                    video_id=int(video_id),
-                    start_frame=frame,
-                    label=int(label),
-                )
-                samples.append(video_object)
-        return samples
+    @staticmethod
+    def _shift_array(array: ArrayLike, shift_magnitude: int) -> ArrayLike:
+        return numpy.concatenate((numpy.zeros(shift_magnitude, dtype=numpy.uint8), array))
