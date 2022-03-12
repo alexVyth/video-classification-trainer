@@ -16,6 +16,7 @@ ANNOTATION_COLOR_TO_CATEGORY = {
     95: 2,
     147: 3,
     241: 4,
+    101: 5,
     50: 0,
 }
 
@@ -40,7 +41,7 @@ class FstDataset(Dataset):
     def __getitem__(self, index: int) -> ArrayLike:
         sample = self.samples[index]
         video = load_video_clip(
-            video_id=sample.video_id, start_frame=sample.start_frame, duration=self.duration
+            sample=sample, start_frame=sample.start_frame, duration=self.duration
         )
         return video, sample.label
 
@@ -50,27 +51,34 @@ class FstDataset(Dataset):
     def _create_samples(self) -> List[ArrayLike]:
         samples = []
         for video_metadata in VIDEO_METADATA:
-            first_index = video_metadata.first_frame
-            last_index = video_metadata.last_frame - self.duration
+            if video_metadata.dataset == 'OLD':
+                first_index = video_metadata.first_frame
+                last_index = video_metadata.last_frame - self.duration
 
-            annotation = self._get_annotation(video_metadata)
+                annotation = self._get_annotation(video_metadata)
 
-            for frame in range(first_index, last_index, self.duration):
-                category = annotation[frame + self.sample_median_frame]
-                label = ANNOTATION_COLOR_TO_CATEGORY[category]
-                video_sample = VideoSample(
-                    dataset=video_metadata.dataset,
-                    video_id=video_metadata.id,
-                    start_frame=frame,
-                    label=label,
-                )
-                samples.append(video_sample)
+                for frame in range(first_index, last_index, self.duration):
+                    category = annotation[frame + self.sample_median_frame]
+                    label = ANNOTATION_COLOR_TO_CATEGORY[category]
+                    video_sample = VideoSample(
+                        dataset=video_metadata.dataset,
+                        video_id=video_metadata.id,
+                        start_frame=frame,
+                        label=label,
+                    )
+                    samples.append(video_sample)
         return samples
 
     def _get_annotation(self, video_metadata: VideoData) -> List[int]:
-        label_dir = os.path.join(
-            '..', 'dataset', video_metadata.dataset, 'labels', f'{video_metadata.id}.png'
-        )
+        if video_metadata.dataset == 'OLD':
+            label_dir = os.path.join(
+                '..', 'dataset', video_metadata.dataset, 'labels', f'{video_metadata.id}-NK.png'
+            )
+        else:
+            label_dir = os.path.join(
+                '..', 'dataset', video_metadata.dataset, 'labels', f'{video_metadata.id}.png'
+            )
+
         return self._preprocess_annotation(label_dir, video_metadata)
 
     def _preprocess_annotation(self, label_dir: ArrayLike, video_metadata: VideoData) -> List[int]:
