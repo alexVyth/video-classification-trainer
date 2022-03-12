@@ -18,6 +18,14 @@ class Color(Enum):
     GREEN = (0, 255, 0)
 
 
+ANNOTATION_GRAYSCALE_COLOR_TO_CATEGORY = {
+    0: '1',
+    95: '2',
+    147: '3',
+    241: '4',
+    50: '0',
+}
+
 FST_CATEGORIES_COLOR_MAPPING: Dict[Color, FstCategory] = {
     Color.BLUE: FstCategory.IMMOBILITY,
     Color.RED: FstCategory.SWIMMING,

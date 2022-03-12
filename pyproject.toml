@@ -39,3 +39,4 @@ skip-string-normalization = 1
 
 [tool.mypy]
 strict = true
+disallow_subclassing_any = false

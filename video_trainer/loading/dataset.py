@@ -39,24 +39,24 @@ def shift_array(array: ArrayLike, shift_magnitude: int) -> ArrayLike:
 
 
 class FstDataset(Dataset):
-    def __init__(self, directory='../dataset/ELIDEK'):
+    def __init__(self, directory: str = '../dataset/ELIDEK'):
         self.VIDEO_DIRECTORY = os.path.join(directory, 'videos')
         self.LABELS_DIRECTORY = os.path.join(directory, 'labels')
         self.duration = 11
         self.fps = 25
         self.samples = self.create_samples()
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int) -> ArrayLike:
         sample = self.samples[index]
         video = load_video_clip(
             video_id=sample.video_id, start_frame=sample.start_frame, duration=self.duration
         )
         return video, sample.label
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.samples)
 
-    def preprocess_annotation(self, label_directory: ArrayLike, shift) -> ArrayLike:
+    def preprocess_annotation(self, label_directory: ArrayLike, shift: int) -> ArrayLike:
         annotated_frames = 300 * self.fps
         annotation = cv.imread(label_directory, 0)[25, :]
         annotation = cv.resize(
@@ -65,7 +65,7 @@ class FstDataset(Dataset):
         annotation = shift_array(annotation, shift)
         return annotation
 
-    def create_samples(self):
+    def create_samples(self) -> ArrayLike:
         samples = []
         for video_id in VIDEO_SYNC.keys():
             label_path = f'../dataset/ELIDEK/labels/{video_id}.png'
