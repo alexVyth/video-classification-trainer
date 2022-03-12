@@ -18,14 +18,6 @@ ANNOTATION_COLOR_TO_CATEGORY = {
     50: '0',
 }
 
-CATEGORY_TO_TEXT_COLOR = {
-    'Climbing': (0, 0, 0),
-    'Immobility': (255, 0, 0),
-    'Swimming': (0, 0, 255),
-    'Diving': (0, 255, 255),
-    'Not Scored': (0, 250, 0),
-}
-
 
 @dataclass
 class VideoSample:
@@ -39,12 +31,16 @@ def shift_array(array: ArrayLike, shift_magnitude: int) -> ArrayLike:
 
 
 class FstDataset(Dataset):
-    def __init__(self, directory: str = '../dataset/ELIDEK'):
-        self.VIDEO_DIRECTORY = os.path.join(directory, 'videos')
-        self.LABELS_DIRECTORY = os.path.join(directory, 'labels')
-        self.duration = 11
+    def __init__(
+        self,
+        directory: str = os.path.join('..', 'dataset', 'ELIDEK'),
+        duration: int = 11,
+    ):
+        self.video_directory = os.path.join(directory, 'videos')
+        self.labels_directory = os.path.join(directory, 'labels')
+        self.duration = duration
         self.fps = 25
-        self.samples = self.create_samples()
+        self.samples = self._create_samples()
 
     def __getitem__(self, index: int) -> ArrayLike:
         sample = self.samples[index]
@@ -56,7 +52,7 @@ class FstDataset(Dataset):
     def __len__(self) -> int:
         return len(self.samples)
 
-    def preprocess_annotation(self, label_directory: ArrayLike, shift: int) -> ArrayLike:
+    def _preprocess_annotation(self, label_directory: ArrayLike, shift: int) -> ArrayLike:
         annotated_frames = 300 * self.fps
         annotation = cv.imread(label_directory, 0)[25, :]
         annotation = cv.resize(
@@ -65,13 +61,13 @@ class FstDataset(Dataset):
         annotation = shift_array(annotation, shift)
         return annotation
 
-    def create_samples(self) -> ArrayLike:
+    def _create_samples(self) -> ArrayLike:
         samples = []
         for video_id in VIDEO_SYNC.keys():
             label_path = f'../dataset/ELIDEK/labels/{video_id}.png'
             first_frame = VIDEO_SYNC[video_id]
             last_frame = first_frame + 300 * self.fps - self.duration
-            annotation = self.preprocess_annotation(label_path, first_frame)
+            annotation = self._preprocess_annotation(label_path, first_frame)
             label_index = math.ceil(self.duration)
             for frame in range(first_frame, last_frame, self.duration):
                 category = annotation[frame + label_index]
