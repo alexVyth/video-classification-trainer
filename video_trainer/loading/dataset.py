@@ -1,95 +1,142 @@
-import math
 import os
-from dataclasses import dataclass
-from typing import List
+import os.path
+from typing import Any, List, Optional, Tuple, Union
 
-import cv2 as cv
-import numpy
-from numpy.typing import ArrayLike
+import numpy as np
+import torch
+from PIL import Image
 from torch.utils.data import Dataset
+from torchvision import transforms
 
-from data.video_shift_sync import VIDEO_METADATA, VideoData
-from video_trainer.loading.load_video import load_video_clip
-
-ANNOTATION_COLOR_TO_CATEGORY = {
-    0: 1,
-    95: 2,
-    147: 3,
-    241: 4,
-    101: 5,
-    50: 0,
-}
+from video_trainer.settings import DATASET_PATH, FRAMES_RGB_TEMPLATE
 
 
-@dataclass
-class VideoSample:
-    dataset: str
-    video_id: str
-    start_frame: int
-    label: int
+class VideoRecord:
+    def __init__(self, row: List[str], root_datapath: str):
+        self._data = row
+        self._path = os.path.join(root_datapath, row[0])
+
+    @property
+    def path(self) -> str:
+        return self._path
+
+    @property
+    def num_frames(self) -> int:
+        return self.end_frame - self.start_frame + 1
+
+    @property
+    def start_frame(self) -> int:
+        return int(self._data[1])
+
+    @property
+    def end_frame(self) -> int:
+        return int(self._data[2])
+
+    @property
+    def label(self) -> int:
+        return int(self._data[3])
 
 
-class FstDataset(Dataset):
+class VideoFrameDataset(Dataset):
     def __init__(
         self,
-        duration: int = 11,
+        annotationfile_path: str,
+        num_segments: int = 3,
+        frames_per_segment: int = 1,
+        transform: Optional[torch.nn.Module] = None,
+        test_mode: bool = False,
     ):
-        self.duration = duration
-        self.sample_median_frame = math.ceil(self.duration / 2)
-        self.samples = self._create_samples()
+        super().__init__()
 
-    def __getitem__(self, index: int) -> ArrayLike:
-        sample = self.samples[index]
-        video = load_video_clip(
-            sample=sample, start_frame=sample.start_frame, duration=self.duration
-        )
-        return video, sample.label
+        self.annotationfile_path = annotationfile_path
+        self.num_segments = num_segments
+        self.frames_per_segment = frames_per_segment
+        self.transform = transform
+        self.test_mode = test_mode
 
-    def __len__(self) -> int:
-        return len(self.samples)
-
-    def _create_samples(self) -> List[ArrayLike]:
-        samples = []
-        for video_metadata in VIDEO_METADATA:
-            if video_metadata.dataset == 'OLD':
-                first_index = video_metadata.first_frame
-                last_index = video_metadata.last_frame - self.duration
-
-                annotation = self._get_annotation(video_metadata)
-
-                for frame in range(first_index, last_index, self.duration):
-                    category = annotation[frame + self.sample_median_frame]
-                    label = ANNOTATION_COLOR_TO_CATEGORY[category]
-                    video_sample = VideoSample(
-                        dataset=video_metadata.dataset,
-                        video_id=video_metadata.id,
-                        start_frame=frame,
-                        label=label,
-                    )
-                    samples.append(video_sample)
-        return samples
-
-    def _get_annotation(self, video_metadata: VideoData) -> List[int]:
-        if video_metadata.dataset == 'OLD':
-            label_dir = os.path.join(
-                '..', 'dataset', video_metadata.dataset, 'labels', f'{video_metadata.id}-NK.png'
-            )
-        else:
-            label_dir = os.path.join(
-                '..', 'dataset', video_metadata.dataset, 'labels', f'{video_metadata.id}.png'
-            )
-
-        return self._preprocess_annotation(label_dir, video_metadata)
-
-    def _preprocess_annotation(self, label_dir: ArrayLike, video_metadata: VideoData) -> List[int]:
-        annotated_frames = 300 * video_metadata.fps
-        annotation = cv.imread(label_dir, 0)[25, :]
-        annotation = cv.resize(
-            annotation, dsize=(1, annotated_frames), interpolation=cv.INTER_NEAREST
-        )[:, 0]
-        annotation = self._shift_array(annotation, video_metadata.first_frame)
-        return annotation  # type: ignore
+        self._parse_annotationfile()
+        self._sanity_check_samples()
 
     @staticmethod
-    def _shift_array(array: ArrayLike, shift_magnitude: int) -> ArrayLike:
-        return numpy.concatenate((numpy.zeros(shift_magnitude, dtype=numpy.uint8), array))
+    def _load_image(directory: str, idx: int) -> Image.Image:
+        return Image.open(os.path.join(directory, FRAMES_RGB_TEMPLATE.format(idx))).convert('RGB')
+
+    def _parse_annotationfile(self) -> None:
+        self.video_list = []
+        with open(self.annotationfile_path, encoding='utf-8') as annotation_file:
+            for annotation_file_row in annotation_file:
+                row = annotation_file_row.strip().split()
+                self.video_list.append(VideoRecord(row, DATASET_PATH))
+
+    def _sanity_check_samples(self) -> None:
+        for record in self.video_list:
+            if record.num_frames <= 0 or record.start_frame == record.end_frame:
+                print(f'video {record.path} seems to have no RGB frames')
+
+            elif record.num_frames < (self.num_segments * self.frames_per_segment):
+                print(
+                    f'\nDataset Warning: video {record.path} has {record.num_frames} frames '
+                    f'error when trying to load this video.\n'
+                )
+
+    def __getitem__(
+        self, idx: int
+    ) -> Union[Tuple[List[Image.Image], int], Tuple[torch.Tensor, int], Tuple[Any, int]]:
+        record: VideoRecord = self.video_list[idx]
+
+        frame_start_indices: np.ndarray = self._get_start_indices(record)
+
+        return self._get(record, frame_start_indices)
+
+    def _get_start_indices(self, record: VideoRecord) -> np.ndarray:
+        if self.test_mode:
+            distance_between_indices = (record.num_frames - self.frames_per_segment + 1) / float(
+                self.num_segments
+            )
+
+            start_indices = np.array(
+                [
+                    int(distance_between_indices / 2.0 + distance_between_indices * x)
+                    for x in range(self.num_segments)
+                ]
+            )
+        else:
+            max_valid_start_index = (
+                record.num_frames - self.frames_per_segment + 1
+            ) // self.num_segments
+
+            start_indices = np.multiply(
+                list(range(self.num_segments)), max_valid_start_index
+            ) + np.random.randint(max_valid_start_index, size=self.num_segments)
+
+        return start_indices
+
+    def _get(
+        self, record: VideoRecord, frame_start_indices: np.ndarray
+    ) -> Union[Tuple[List[Image.Image], int], Tuple[torch.Tensor, int], Tuple[Any, int]]:
+        frame_start_indices = frame_start_indices + record.start_frame
+        images = []
+        for start_index in frame_start_indices:
+            frame_index = int(start_index)
+            for _ in range(self.frames_per_segment):
+                image = self._load_image(record.path, frame_index)
+                images.append(image)
+
+                if frame_index < record.end_frame:
+                    frame_index += 1
+
+        if self.transform is not None:
+            images = self.transform(images)
+
+        return images, record.label
+
+    def __len__(self) -> int:
+        return len(self.video_list)
+
+
+class ImglistToTensor(torch.nn.Module):
+    @staticmethod
+    def forward(
+        img_list: List[Image.Image],
+    ) -> torch.Tensor:
+        return torch.stack([transforms.functional.to_tensor(pic) for pic in img_list])

@@ -6,7 +6,9 @@ from typing import Tuple
 import cv2
 from numpy.typing import ArrayLike
 
-DATASET = 'ELIDEK'
+from video_trainer.enums import Dataset
+
+DATASET = Dataset.ELIDEK
 MOUSE_POSITION = 'RIGHT'
 VIDEO_FORMAT = 'MP4'
 
@@ -26,7 +28,7 @@ def get_roi(image: ArrayLike) -> Tuple[int, int, int, int]:
 
 
 def get_video_destination(video_source: str) -> str:
-    video_destination = video_source.replace(DATASET, f'{DATASET}_CROPPED')
+    video_destination = video_source.replace(DATASET.value, f'{DATASET.value}_CROPPED')
     pattern = r'-\d+' if MOUSE_POSITION == 'LEFT' else r'\d+-'
     return re.sub(pattern, '', video_destination)
 
@@ -41,7 +43,9 @@ def crop_video(video_source: str, video_destination: str, roi: Tuple[int, int, i
 
 
 def main() -> None:
-    video_directories = glob.glob(f'../dataset/{DATASET}/**/**.{VIDEO_FORMAT}', recursive=True)
+    video_directories = glob.glob(
+        f'../dataset/{DATASET.value}/**/**.{VIDEO_FORMAT}', recursive=True
+    )
     for video_source in video_directories:
         video_destination = get_video_destination(video_source)
         frame = get_video_frame(video_source)
