@@ -17,7 +17,7 @@ torch.backends.cudnn.benchmark = True
 def train(training_loader: DataLoader, validation_loader: DataLoader) -> None:
     MODEL.to(DEVICE)
     criterion = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.SGD(MODEL.parameters(), lr=0.01, momentum=0.9, weight_decay=1e-4)
+    optimizer = torch.optim.AdamW(MODEL.parameters())
     for epoch in range(EPOCHS):
         print(f'Epoch: {epoch + 1}/{EPOCHS}')
         print('Training:')

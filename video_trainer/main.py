@@ -1,5 +1,6 @@
 from typing import Tuple
 
+import torch
 from torch.utils.data import DataLoader
 from torch.utils.data.dataset import Dataset
 from torchvision import transforms
@@ -20,20 +21,35 @@ def main() -> None:
 
 
 def create_datasets() -> Tuple[Dataset, Dataset]:
-    preprocess = transforms.Compose(
+    preprocess_train = transforms.Compose(
         [
             ImgListToTensor(),
-            transforms.Resize(16),
+            transforms.ConvertImageDtype(torch.float32),
+            transforms.Resize((128, 150)),
             transforms.Normalize(
                 mean=[0.43216, 0.394666, 0.37645], std=[0.22803, 0.22145, 0.216989]
             ),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomCrop((112, 112)),
+            ConvertBCHWtoCBHW(),
+        ]
+    )
+    preprocess_validation = transforms.Compose(
+        [
+            ImgListToTensor(),
+            transforms.ConvertImageDtype(torch.float32),
+            transforms.Resize((128, 150)),
+            transforms.Normalize(
+                mean=[0.43216, 0.394666, 0.37645], std=[0.22803, 0.22145, 0.216989]
+            ),
+            transforms.CenterCrop((112, 112)),
             ConvertBCHWtoCBHW(),
         ]
     )
     return (
-        VideoFrameDataset(dataset_split=DatasetSplit.TRAIN, transform=preprocess),
+        VideoFrameDataset(dataset_split=DatasetSplit.TRAIN, transform=preprocess_train),
         VideoFrameDataset(
-            dataset_split=DatasetSplit.VALIDATION, test_mode=True, transform=preprocess
+            dataset_split=DatasetSplit.VALIDATION, test_mode=True, transform=preprocess_validation
         ),
     )
 
@@ -43,14 +59,14 @@ def create_dataloaders(
 ) -> Tuple[DataLoader, DataLoader]:
     dataloader_train = DataLoader(
         dataset=dataset_train,
-        batch_size=128,
+        batch_size=8,
         shuffle=True,
         num_workers=4,
         pin_memory=True,
     )
     dataloader_validation = DataLoader(
         dataset=dataset_validation,
-        batch_size=128,
+        batch_size=8,
         shuffle=False,
         num_workers=4,
         pin_memory=True,
