@@ -2,13 +2,9 @@ from typing import Tuple
 
 from torch.utils.data.dataset import Dataset
 
+from video_trainer.enums import DatasetSplit
 from video_trainer.loading.annotation_file import create as create_annotation_file
 from video_trainer.loading.dataset import VideoFrameDataset
-from video_trainer.settings import (
-    TEST_ANNOTATION_PATH,
-    TRAIN_ANNOTATION_PATH,
-    VALIDATION_ANNOTATION_PATH,
-)
 
 
 def main() -> None:
@@ -33,16 +29,16 @@ def main() -> None:
 
 def create_datasets() -> Tuple[Dataset, Dataset, Dataset]:
     return (
-        VideoFrameDataset(annotationfile_path=TRAIN_ANNOTATION_PATH),
-        VideoFrameDataset(annotationfile_path=VALIDATION_ANNOTATION_PATH, test_mode=True),
-        VideoFrameDataset(annotationfile_path=TEST_ANNOTATION_PATH, test_mode=True),
+        VideoFrameDataset(dataset_split=DatasetSplit.TRAIN),
+        VideoFrameDataset(dataset_split=DatasetSplit.VALIDATION, test_mode=True),
+        VideoFrameDataset(dataset_split=DatasetSplit.TEST, test_mode=True),
     )
 
 
 def create_annotation_files() -> None:
-    create_annotation_file(annotation_file=TRAIN_ANNOTATION_PATH)
-    create_annotation_file(annotation_file=VALIDATION_ANNOTATION_PATH)
-    create_annotation_file(annotation_file=TEST_ANNOTATION_PATH)
+    create_annotation_file(dataset_split=DatasetSplit.TRAIN)
+    create_annotation_file(dataset_split=DatasetSplit.VALIDATION)
+    create_annotation_file(dataset_split=DatasetSplit.TEST)
 
 
 if __name__ == '__main__':

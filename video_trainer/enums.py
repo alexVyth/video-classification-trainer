@@ -6,6 +6,12 @@ class Dataset(Enum):
     OLD = 'OLD'
 
 
+class DatasetSplit(Enum):
+    TRAIN = 'TRAIN'
+    VALIDATION = 'VALIDATION'
+    TEST = 'TEST'
+
+
 class FstCategory(Enum):
     CLIMBING = 1
     SWIMMING = 2

@@ -8,7 +8,12 @@ from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms
 
-from video_trainer.settings import DATASET_PATH, FRAMES_RGB_TEMPLATE
+from video_trainer.enums import DatasetSplit
+from video_trainer.settings import (
+    DATASET_PATH,
+    DATASET_SPLIT_TO_ANNOTATION_PATH,
+    FRAMES_RGB_TEMPLATE,
+)
 
 
 class VideoRecord:
@@ -40,7 +45,7 @@ class VideoRecord:
 class VideoFrameDataset(Dataset):
     def __init__(
         self,
-        annotationfile_path: str,
+        dataset_split: DatasetSplit,
         num_segments: int = 3,
         frames_per_segment: int = 1,
         transform: Optional[torch.nn.Module] = None,
@@ -48,7 +53,7 @@ class VideoFrameDataset(Dataset):
     ):
         super().__init__()
 
-        self.annotationfile_path = annotationfile_path
+        self.annotationfile_path = DATASET_SPLIT_TO_ANNOTATION_PATH[dataset_split]
         self.num_segments = num_segments
         self.frames_per_segment = frames_per_segment
         self.transform = transform
