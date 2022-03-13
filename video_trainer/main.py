@@ -23,7 +23,7 @@ def create_datasets() -> Tuple[Dataset, Dataset]:
     preprocess = transforms.Compose(
         [
             ImgListToTensor(),
-            transforms.Resize(32),
+            transforms.Resize(16),
             transforms.Normalize(
                 mean=[0.43216, 0.394666, 0.37645], std=[0.22803, 0.22145, 0.216989]
             ),
@@ -43,14 +43,14 @@ def create_dataloaders(
 ) -> Tuple[DataLoader, DataLoader]:
     dataloader_train = DataLoader(
         dataset=dataset_train,
-        batch_size=4,
+        batch_size=128,
         shuffle=True,
         num_workers=4,
         pin_memory=True,
     )
     dataloader_validation = DataLoader(
         dataset=dataset_validation,
-        batch_size=4,
+        batch_size=128,
         shuffle=False,
         num_workers=4,
         pin_memory=True,
