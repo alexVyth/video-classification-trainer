@@ -7,15 +7,10 @@ import cv2 as cv
 import numpy
 from numpy.typing import ArrayLike
 
-from data.video_metadata import VIDEO_METADATA, VideoData
-from video_trainer.enums import DatasetSplit, FstCategory
-from video_trainer.settings import (
-    DATASET_SPLIT_TO_ANNOTATION_PATH,
-    DATASET_SPLIT_TO_VIDEOS,
-    FPS,
-    SAMPLE_DURATION_IN_FRAMES,
-    VIDEO_DURATION_IN_SECONDS,
-)
+from video_trainer.data.splitting import DATASET_SPLIT_TO_ANNOTATION_PATH, DATASET_SPLIT_TO_VIDEOS
+from video_trainer.data.video_metadata import VIDEO_METADATA, VideoData
+from video_trainer.enums import Dataset, DatasetSplit, FstCategory
+from video_trainer.settings import FPS, SAMPLE_DURATION_IN_FRAMES, VIDEO_DURATION_IN_SECONDS
 
 MEDIAN_FRAME = ceil(SAMPLE_DURATION_IN_FRAMES / 2)
 
@@ -36,23 +31,27 @@ class VideoSample:
     label: int
 
 
-def create_samples(duration: int, dataset_split: DatasetSplit) -> List[VideoSample]:
+def create_samples(dataset_split: DatasetSplit) -> List[VideoSample]:
     samples = []
     split_videos = DATASET_SPLIT_TO_VIDEOS[dataset_split]
     for video_metadata in VIDEO_METADATA:
         if video_metadata.name in split_videos:
-            first_sample_start = video_metadata.first_frame
-            last_sample_start = video_metadata.last_frame - duration
+            first_sample_starting_frame = video_metadata.first_annotated_frame
+            last_sample_starting_frame = video_metadata.last_frame - SAMPLE_DURATION_IN_FRAMES
 
             label_image = _get_annotation(video_metadata)
 
             file_path = os.path.join(
                 video_metadata.dataset.value, 'frames_rgb', video_metadata.name
             )
-            for frame in range(first_sample_start, last_sample_start, duration):
+            for frame in range(
+                first_sample_starting_frame, last_sample_starting_frame, SAMPLE_DURATION_IN_FRAMES
+            ):
                 category = label_image[frame + MEDIAN_FRAME]
                 label = ANNOTATION_COLOR_TO_CATEGORY[category]
-                video_sample = VideoSample(file_path, frame, frame + duration, label)
+                video_sample = VideoSample(
+                    file_path, frame, frame + SAMPLE_DURATION_IN_FRAMES - 1, label
+                )
                 samples.append(video_sample)
     return samples
 
@@ -61,7 +60,7 @@ def _get_annotation(video_metadata: VideoData) -> List[int]:
     label_dir = os.path.join(
         '..', 'dataset', video_metadata.dataset.value, 'labels', f'{video_metadata.name}'
     )
-    if video_metadata.dataset.value == 'OLD':
+    if video_metadata.dataset.value == Dataset.OLD.value:
         label_dir = f'{label_dir}-NK'
     return _preprocess_annotation(f'{label_dir}.png', video_metadata)
 
@@ -72,7 +71,7 @@ def _preprocess_annotation(label_dir: ArrayLike, video_metadata: VideoData) -> L
     annotation = cv.resize(
         annotation, dsize=(1, annotated_frames), interpolation=cv.INTER_NEAREST
     )[:, 0]
-    annotation = _shift_array(annotation, video_metadata.first_frame)
+    annotation = _shift_array(annotation, video_metadata.first_annotated_frame)
     return annotation  # type: ignore
 
 
@@ -82,7 +81,7 @@ def _shift_array(array: ArrayLike, shift_magnitude: int) -> ArrayLike:
 
 def create(dataset_split: DatasetSplit) -> None:
     annotation_file = DATASET_SPLIT_TO_ANNOTATION_PATH[dataset_split]
-    samples = create_samples(SAMPLE_DURATION_IN_FRAMES, dataset_split)
+    samples = create_samples(dataset_split)
     with open(annotation_file, mode='w', encoding='utf-8') as f:
         for sample in samples:
             video_id = f'{str(sample.video_path)}'

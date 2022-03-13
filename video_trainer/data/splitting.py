@@ -1,6 +1,9 @@
 # from random import sample
+import os
 
-from data.video_metadata import VIDEO_METADATA
+from video_trainer.data.video_metadata import VIDEO_METADATA
+from video_trainer.enums import DatasetSplit
+from video_trainer.settings import DATASET_PATH
 
 VIDEOS = {video.name for video in VIDEO_METADATA}
 
@@ -58,3 +61,15 @@ VALIDATION_VIDEOS = {
     '4C-F47',
 }
 TRAIN_VIDEOS = TRAIN_VALIDATION_VIDEOS - VALIDATION_VIDEOS
+
+DATASET_SPLIT_TO_VIDEOS = {
+    DatasetSplit.TRAIN: TRAIN_VIDEOS,
+    DatasetSplit.VALIDATION: VALIDATION_VIDEOS,
+    DatasetSplit.TEST: TEST_VIDEOS,
+}
+
+DATASET_SPLIT_TO_ANNOTATION_PATH = {
+    DatasetSplit.TRAIN: os.path.join(DATASET_PATH, 'train_sample_data.txt'),
+    DatasetSplit.VALIDATION: os.path.join(DATASET_PATH, 'validation_sample_data.txt'),
+    DatasetSplit.TEST: os.path.join(DATASET_PATH, 'test_sample_data.txt'),
+}

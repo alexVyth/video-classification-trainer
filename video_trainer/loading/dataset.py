@@ -1,6 +1,6 @@
 import os
 import os.path
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, List, Tuple, Union
 
 import numpy as np
 import torch
@@ -8,12 +8,9 @@ from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms
 
+from video_trainer.data.splitting import DATASET_SPLIT_TO_ANNOTATION_PATH
 from video_trainer.enums import DatasetSplit
-from video_trainer.settings import (
-    DATASET_PATH,
-    DATASET_SPLIT_TO_ANNOTATION_PATH,
-    FRAMES_RGB_TEMPLATE,
-)
+from video_trainer.settings import DATASET_PATH, FRAMES_RGB_TEMPLATE
 
 
 class VideoRecord:
@@ -46,9 +43,9 @@ class VideoFrameDataset(Dataset):
     def __init__(
         self,
         dataset_split: DatasetSplit,
-        num_segments: int = 3,
-        frames_per_segment: int = 1,
-        transform: Optional[torch.nn.Module] = None,
+        num_segments: int = 5,
+        frames_per_segment: int = 3,
+        transform: Any = None,
         test_mode: bool = False,
     ):
         super().__init__()
@@ -139,7 +136,7 @@ class VideoFrameDataset(Dataset):
         return len(self.video_list)
 
 
-class ImglistToTensor(torch.nn.Module):
+class ImgListToTensor(torch.nn.Module):
     @staticmethod
     def forward(
         img_list: List[Image.Image],
