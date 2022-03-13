@@ -7,7 +7,7 @@ from torchvision import transforms
 from video_trainer.classification.training import train
 from video_trainer.enums import DatasetSplit
 from video_trainer.loading.annotation_file import create as create_annotation_file
-from video_trainer.loading.dataset import ImgListToTensor, VideoFrameDataset
+from video_trainer.loading.dataset import ConvertBCHWtoCBHW, ImgListToTensor, VideoFrameDataset
 
 
 def main() -> None:
@@ -23,9 +23,11 @@ def create_datasets() -> Tuple[Dataset, Dataset]:
     preprocess = transforms.Compose(
         [
             ImgListToTensor(),
-            transforms.Resize(150),
-            transforms.RandomCrop(112),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            transforms.Resize(32),
+            transforms.Normalize(
+                mean=[0.43216, 0.394666, 0.37645], std=[0.22803, 0.22145, 0.216989]
+            ),
+            ConvertBCHWtoCBHW(),
         ]
     )
     return (
@@ -41,14 +43,14 @@ def create_dataloaders(
 ) -> Tuple[DataLoader, DataLoader]:
     dataloader_train = DataLoader(
         dataset=dataset_train,
-        batch_size=64,
+        batch_size=4,
         shuffle=True,
         num_workers=4,
         pin_memory=True,
     )
     dataloader_validation = DataLoader(
         dataset=dataset_validation,
-        batch_size=64,
+        batch_size=4,
         shuffle=False,
         num_workers=4,
         pin_memory=True,
