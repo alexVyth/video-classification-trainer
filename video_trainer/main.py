@@ -25,7 +25,7 @@ def create_datasets() -> Tuple[Dataset, Dataset]:
         [
             ImgListToTensor(),
             transforms.ConvertImageDtype(torch.float32),
-            transforms.Resize((128, 150)),
+            transforms.Resize((150, 128)),
             transforms.Normalize(
                 mean=[0.43216, 0.394666, 0.37645], std=[0.22803, 0.22145, 0.216989]
             ),
@@ -38,7 +38,7 @@ def create_datasets() -> Tuple[Dataset, Dataset]:
         [
             ImgListToTensor(),
             transforms.ConvertImageDtype(torch.float32),
-            transforms.Resize((128, 150)),
+            transforms.Resize((150, 128)),
             transforms.Normalize(
                 mean=[0.43216, 0.394666, 0.37645], std=[0.22803, 0.22145, 0.216989]
             ),
