@@ -12,8 +12,6 @@ from video_trainer.loading.dataset import ConvertBCHWtoCBHW, ImgListToTensor, Vi
 
 
 def main() -> None:
-    create_annotation_files()
-
     dataset_train, dataset_validation = create_datasets()
     dataloader_train, dataloader_validation = create_dataloaders(dataset_train, dataset_validation)
 
@@ -21,6 +19,7 @@ def main() -> None:
 
 
 def create_datasets() -> Tuple[Dataset, Dataset]:
+    _create_annotation_files()
     preprocess_train = transforms.Compose(
         [
             ImgListToTensor(),
@@ -54,6 +53,12 @@ def create_datasets() -> Tuple[Dataset, Dataset]:
     )
 
 
+def _create_annotation_files() -> None:
+    create_annotation_file(dataset_split=DatasetSplit.TRAIN)
+    create_annotation_file(dataset_split=DatasetSplit.VALIDATION)
+    create_annotation_file(dataset_split=DatasetSplit.TEST)
+
+
 def create_dataloaders(
     dataset_train: Dataset, dataset_validation: Dataset
 ) -> Tuple[DataLoader, DataLoader]:
@@ -72,12 +77,6 @@ def create_dataloaders(
         pin_memory=True,
     )
     return dataloader_train, dataloader_validation
-
-
-def create_annotation_files() -> None:
-    create_annotation_file(dataset_split=DatasetSplit.TRAIN)
-    create_annotation_file(dataset_split=DatasetSplit.VALIDATION)
-    create_annotation_file(dataset_split=DatasetSplit.TEST)
 
 
 if __name__ == '__main__':
