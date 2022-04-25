@@ -13,8 +13,8 @@ class DatasetSplit(Enum):
 
 
 class FstCategory(Enum):
-    CLIMBING = 1
-    SWIMMING = 2
-    IMMOBILITY = 3
-    DIVING = 4
-    HEAD_SHAKE = 5
+    CLIMBING = 0
+    SWIMMING = 1
+    IMMOBILITY = 2
+    DIVING = 3
+    HEAD_SHAKE = 4
