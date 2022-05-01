@@ -10,7 +10,12 @@ from torchvision import transforms
 
 from video_trainer.data.splitting import DATASET_SPLIT_TO_ANNOTATION_PATH
 from video_trainer.enums import DatasetSplit
-from video_trainer.settings import DATASET_PATH, FRAMES_RGB_TEMPLATE
+from video_trainer.settings import (
+    DATASET_PATH,
+    FRAMES_PER_SEGMENT,
+    FRAMES_RGB_TEMPLATE,
+    NUM_SEGMENTS,
+)
 
 
 class VideoRecord:
@@ -43,8 +48,8 @@ class VideoFrameDataset(Dataset):
     def __init__(
         self,
         dataset_split: DatasetSplit,
-        num_segments: int = 5,
-        frames_per_segment: int = 3,
+        num_segments: int = NUM_SEGMENTS,
+        frames_per_segment: int = FRAMES_PER_SEGMENT,
         transform: Any = None,
         test_mode: bool = False,
     ):
