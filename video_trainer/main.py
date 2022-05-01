@@ -27,7 +27,7 @@ def main() -> None:
         accelerator='gpu',
         devices=1,
         max_epochs=settings.EPOCHS,
-        precision=settings.PRECISION,
+        precision=16,
         limit_train_batches=6,
         limit_val_batches=3,
         limit_test_batches=3,
