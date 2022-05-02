@@ -18,9 +18,9 @@ from video_trainer.model import System
 
 def main() -> None:
 
-    dataset_train, dataset_validation, test_dataset = create_datasets()
+    dataset_train, dataset_validation, dataset_test = create_datasets()
     dataloader_train, dataloader_validation, dataloader_test = create_dataloaders(
-        dataset_train, dataset_validation, test_dataset
+        dataset_train, dataset_validation, dataset_test
     )
 
     trainer = lightning.Trainer(
