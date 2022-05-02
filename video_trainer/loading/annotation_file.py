@@ -1,6 +1,7 @@
 import os
 from dataclasses import dataclass
 from math import ceil
+from pathlib import Path
 from typing import List
 
 import cv2 as cv
@@ -10,7 +11,12 @@ from numpy.typing import ArrayLike
 from video_trainer.data.splitting import DATASET_SPLIT_TO_ANNOTATION_PATH, DATASET_SPLIT_TO_VIDEOS
 from video_trainer.data.video_metadata import VIDEO_METADATA, VideoData
 from video_trainer.enums import Dataset, DatasetSplit, FstCategory
-from video_trainer.settings import FPS, SAMPLE_DURATION_IN_FRAMES, VIDEO_DURATION_IN_SECONDS
+from video_trainer.settings import (
+    FPS,
+    SAMPLE_DURATION_IN_FRAMES,
+    TEMP_DIR,
+    VIDEO_DURATION_IN_SECONDS,
+)
 
 MEDIAN_FRAME = ceil(SAMPLE_DURATION_IN_FRAMES / 2)
 
@@ -81,6 +87,8 @@ def _shift_array(array: ArrayLike, shift_magnitude: int) -> ArrayLike:
 
 def create(dataset_split: DatasetSplit) -> None:
     annotation_file = DATASET_SPLIT_TO_ANNOTATION_PATH[dataset_split]
+    Path(TEMP_DIR).mkdir(parents=True, exist_ok=True)
+
     samples = create_samples(dataset_split)
     with open(annotation_file, mode='w', encoding='utf-8') as f:
         for sample in samples:

@@ -28,9 +28,6 @@ def main() -> None:
         devices=1,
         max_epochs=settings.EPOCHS,
         precision=16,
-        limit_train_batches=6,
-        limit_val_batches=3,
-        limit_test_batches=3,
         logger=MLFlowLogger(experiment_name='Default'),
         callbacks=[ModelCheckpoint(save_top_k=3, monitor='val_acc')],
     )
