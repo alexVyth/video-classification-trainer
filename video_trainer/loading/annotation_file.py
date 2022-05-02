@@ -10,7 +10,7 @@ from numpy.typing import ArrayLike
 
 from video_trainer.data.splitting import DATASET_SPLIT_TO_ANNOTATION_PATH, DATASET_SPLIT_TO_VIDEOS
 from video_trainer.data.video_metadata import VIDEO_METADATA, VideoData
-from video_trainer.enums import Dataset, DatasetSplit, FstCategory
+from video_trainer.enums import DatasetSplit, FstCategory
 from video_trainer.settings import (
     FPS,
     SAMPLE_DURATION_IN_FRAMES,
@@ -64,10 +64,12 @@ def create_samples(dataset_split: DatasetSplit) -> List[VideoSample]:
 
 def _get_annotation(video_metadata: VideoData) -> List[int]:
     label_dir = os.path.join(
-        '..', 'dataset', video_metadata.dataset.value, 'labels', f'{video_metadata.name}'
+        '..',
+        'dataset',
+        video_metadata.dataset.value,
+        'labels',
+        f'{video_metadata.name}-{video_metadata.annotator}',
     )
-    if video_metadata.dataset.value == Dataset.OLD.value:
-        label_dir = f'{label_dir}-NK'
     return _preprocess_annotation(f'{label_dir}.png', video_metadata)
 
 
