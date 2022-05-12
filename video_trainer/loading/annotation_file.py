@@ -16,6 +16,7 @@ from video_trainer.settings import (
     SAMPLE_DURATION_IN_FRAMES,
     TEMP_DIR,
     VIDEO_DURATION_IN_SECONDS,
+    DATASET_PATH,
 )
 
 MEDIAN_FRAME = ceil(SAMPLE_DURATION_IN_FRAMES / 2)
@@ -64,8 +65,7 @@ def create_samples(dataset_split: DatasetSplit) -> List[VideoSample]:
 
 def _get_annotation(video_metadata: VideoData) -> List[int]:
     label_dir = os.path.join(
-        '..',
-        'dataset',
+        DATASET_PATH,
         video_metadata.dataset.value,
         'labels',
         f'{video_metadata.name}-{video_metadata.annotator}',

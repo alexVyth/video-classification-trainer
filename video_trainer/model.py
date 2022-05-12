@@ -217,3 +217,47 @@ class R2Plus1DFineTuned(torch.nn.Module):
     def _set_parameter_requires_grad(self) -> None:
         for param in self.model.parameters():
             param.requires_grad = False
+
+
+
+class Mymodel_1_3conv(torch.nn.Module):
+    def __init__(self, num_classes: int = 5):
+        super().__init__()
+        self.name = 'mymodel_1_3conv'
+        self.model = nn.Sequential(
+        nn.Conv3d(3, 32, kernel_size=(3,3,3), padding=1),
+        nn.ReLU(),
+        nn.MaxPool3d((2,2,2)),
+
+        nn.Conv3d(32, 64, kernel_size=(3,3,3), padding=1),
+        nn.ReLU(),
+        nn.MaxPool3d((2,2,2)),
+
+        nn.Conv3d(64, 128, kernel_size=(3,3,3), padding=1),
+        nn.ReLU(),
+        nn.MaxPool3d((2,2,2)),
+
+      
+        #Flatten
+        nn.Flatten(),  
+        #Linear 1
+        nn.Linear(36864, 128), 
+        #Relu
+        nn.ReLU(),
+        #BatchNorm1d
+        nn.BatchNorm1d(128),
+        #Dropout
+        nn.Dropout(p=0.15),
+        #Linear 2
+        nn.Linear(128, num_classes)
+        
+        
+        )
+        self._set_parameter_requires_grad()
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.model(x)
+
+    def _set_parameter_requires_grad(self) -> None:
+        for param in self.model.parameters():
+            param.requires_grad = True
