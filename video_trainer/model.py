@@ -242,7 +242,7 @@ class Mymodel_1_3conv(torch.nn.Module):
         #Flatten
         nn.Flatten(),  
         #Linear 1
-        nn.Linear(36864, 128), 
+        nn.Linear(50176, 128), 
         #Relu
         nn.ReLU(),
         #BatchNorm1d
