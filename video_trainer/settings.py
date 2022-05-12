@@ -1,6 +1,6 @@
 import os
 
-DATASET_PATH = os.path.join('..', 'train')
+DATASET_PATH = os.path.join('..', 'dataset')
 TEMP_DIR = 'tmp'
 
 FRAMES_RGB_TEMPLATE = 'frame_{0:06d}.jpg'

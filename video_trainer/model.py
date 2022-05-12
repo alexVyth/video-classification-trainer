@@ -29,7 +29,7 @@ class System(lightning.LightningModule):
         self,
     ) -> None:
         super().__init__()
-        self.model = R2Plus1DFineTuned()
+        self.model = Mymodel_1_3conv()
         self.accuracy = torchmetrics.Accuracy()
         self.confusion_matrix = torchmetrics.ConfusionMatrix(num_classes=5)
         self.f1_score = torchmetrics.F1Score(num_classes=5, average='none')
