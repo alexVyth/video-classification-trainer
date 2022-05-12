@@ -6,6 +6,7 @@ import pandas
 import pytorch_lightning as lightning
 import seaborn
 import torch
+import torch.nn as nn
 import torchmetrics
 import torchvision
 from PIL import Image
