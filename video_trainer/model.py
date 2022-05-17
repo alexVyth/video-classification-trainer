@@ -237,12 +237,19 @@ class Mymodel_1_3conv(torch.nn.Module):
         nn.Conv3d(64, 128, kernel_size=(3,3,3), padding=1),
         nn.ReLU(),
         nn.MaxPool3d((2,2,2)),
+        
+        nn.Conv3d(128, 256, kernel_size=(3,3,3), padding=1),
+        nn.ReLU(),
+        nn.MaxPool3d((2,2,2)),
+        
+        
+        nn.AdaptiveAvgPool3d(1),
 
       
         #Flatten
         nn.Flatten(),  
         #Linear 1
-        nn.Linear(50176, 128), 
+        nn.Linear(256, 128), 
         #Relu
         nn.ReLU(),
         #BatchNorm1d
