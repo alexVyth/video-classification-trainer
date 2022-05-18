@@ -52,7 +52,7 @@ def create_datasets() -> Tuple[Dataset, Dataset, Dataset]:
                 mean=[0.43216, 0.394666, 0.37645], std=[0.22803, 0.22145, 0.216989]
             ),
             transforms.RandomHorizontalFlip(),
-            transforms.RandomCrop((112, 112)),
+            transforms.RandomCrop(settings.TRAIN_RANDOM_CROP),
             ConvertBCHWtoCBHW(),
         ]
     )
@@ -64,7 +64,7 @@ def create_datasets() -> Tuple[Dataset, Dataset, Dataset]:
             transforms.Normalize(
                 mean=[0.43216, 0.394666, 0.37645], std=[0.22803, 0.22145, 0.216989]
             ),
-            transforms.CenterCrop((112, 112)),
+            transforms.CenterCrop(settings.VALID_CENTER_CROP),
             ConvertBCHWtoCBHW(),
         ]
     )

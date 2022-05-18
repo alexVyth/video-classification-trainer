@@ -22,6 +22,8 @@ from video_trainer.settings import (
     LEARNING_RATE,
     NUM_SEGMENTS,
     SAMPLE_DURATION_IN_FRAMES,
+    TRAIN_RANDOM_CROP,
+    VALID_CENTER_CROP, 
 )
 
 
@@ -52,6 +54,8 @@ class System(lightning.LightningModule):
         self._log_param('batch_size', BATCH_SIZE)
         self._log_param('epochs', EPOCHS)
         self._log_param('learning_rate', LEARNING_RATE)
+        self._log_param('train_random_crop', TRAIN_RANDOM_CROP)
+        self._log_param('valid_center_crop', VALID_CENTER_CROP)
 
     def _log_param(self, key: str, value: Any) -> None:
         self.logger.experiment.log_param(self.logger.run_id, key, value)
