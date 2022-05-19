@@ -9,54 +9,7 @@ VIDEOS = {video.name for video in VIDEO_METADATA}
 # test_videos = sample(VIDEOS, round(len(VIDEO_METADATA)* 0.2))
 
 TEST_VIDEOS = {
-    '17',
-    '4C-F43',
-    '4C-2012-F20',
-    '4C-M7',
-    '40',
-    '4C-2012-F21',
-    '4C-F9',
-    '4C-M1',
-    '90',
-    '68',
-    '4C-2012-F5',
-    '4C-F21',
-    '4C-2012-F8',
-    '87',
-    '63',
-    '27',
-    '4C-F38',
-    '4C-2012-F19',
-    '31',
-    '41',
-    '4C-F40',
-    '65',
-    '84',
-    '4C-2012-F14',
-    '4C-2012-F7',
-    '106',
-    '9',
-    '4C-2012-F1',
-    '4C-2012-F27',
-    '4C-2012-F22',
-    '4C-M29',
-    '4C-M21',
-    '23',
-    '58',
-    '4C-F1',
-    '34',
-    '30',
-    '4C-F28',
-    '105',
-    '15',
-}
-
-TRAIN_VALIDATION_VIDEOS = VIDEOS - TEST_VIDEOS
-
-# validation_videos = sample(TRAIN_VALIDATION_VIDEOS, round(len(VIDEO_METADATA)* 0.2))
-
-VALIDATION_VIDEOS = {
-    '110',
+     '110',
     '4C-M15',
     '4C-F5',
     '4C-F10',
@@ -96,6 +49,53 @@ VALIDATION_VIDEOS = {
     '4C-F11',
     '4C-F17',
     '4C-F24',
+}
+
+TRAIN_VALIDATION_VIDEOS = VIDEOS - TEST_VIDEOS
+
+# validation_videos = sample(TRAIN_VALIDATION_VIDEOS, round(len(VIDEO_METADATA)* 0.2))
+
+VALIDATION_VIDEOS = {
+   '17',
+    '4C-F43',
+    '4C-2012-F20',
+    '4C-M7',
+    '40',
+    '4C-2012-F21',
+    '4C-F9',
+    '4C-M1',
+    '90',
+    '68',
+    '4C-2012-F5',
+    '4C-F21',
+    '4C-2012-F8',
+    '87',
+    '63',
+    '27',
+    '4C-F38',
+    '4C-2012-F19',
+    '31',
+    '41',
+    '4C-F40',
+    '65',
+    '84',
+    '4C-2012-F14',
+    '4C-2012-F7',
+    '106',
+    '9',
+    '4C-2012-F1',
+    '4C-2012-F27',
+    '4C-2012-F22',
+    '4C-M29',
+    '4C-M21',
+    '23',
+    '58',
+    '4C-F1',
+    '34',
+    '30',
+    '4C-F28',
+    '105',
+    '15',
 }
 TRAIN_VIDEOS = TRAIN_VALIDATION_VIDEOS - VALIDATION_VIDEOS
 
