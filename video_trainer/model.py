@@ -32,7 +32,7 @@ class System(lightning.LightningModule):
         self,
     ) -> None:
         super().__init__()
-        self.model = Mymodel_1_3conv()
+        self.model = Resnet3DFineTuned()
         self.accuracy = torchmetrics.Accuracy()
         self.confusion_matrix = torchmetrics.ConfusionMatrix(num_classes=5)
         self.f1_score = torchmetrics.F1Score(num_classes=5, average='none')
@@ -223,7 +223,21 @@ class R2Plus1DFineTuned(torch.nn.Module):
         for param in self.model.parameters():
             param.requires_grad = False
 
+class Resnet3DFineTuned(torch.nn.Module):
+    def __init__(self, num_classes: int = 5):
+        super().__init__()
+        self.name = 'resnet3d'
+        self.model = torchvision.models.video.r3d_18(pretrained=True)
+        self._set_parameter_requires_grad()
+        in_features = self.model.fc.in_features
+        self.model.fc = torch.nn.Linear(in_features, num_classes)
 
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.model(x)
+
+    def _set_parameter_requires_grad(self) -> None:
+        for param in self.model.parameters():
+            param.requires_grad = False
 
 class Mymodel_1_3conv(torch.nn.Module):
     def __init__(self, num_classes: int = 5):
