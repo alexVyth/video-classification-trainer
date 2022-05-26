@@ -12,11 +12,11 @@ from video_trainer.data.splitting import DATASET_SPLIT_TO_ANNOTATION_PATH, DATAS
 from video_trainer.data.video_metadata import VIDEO_METADATA, VideoData
 from video_trainer.enums import DatasetSplit, FstCategory
 from video_trainer.settings import (
+    DATASET_PATH,
     FPS,
     SAMPLE_DURATION_IN_FRAMES,
     TEMP_DIR,
     VIDEO_DURATION_IN_SECONDS,
-    DATASET_PATH,
 )
 
 MEDIAN_FRAME = ceil(SAMPLE_DURATION_IN_FRAMES / 2)
@@ -38,55 +38,6 @@ class VideoSample:
     label: int
 
 
-def create_samples(dataset_split: DatasetSplit) -> List[VideoSample]:
-    samples = []
-    split_videos = DATASET_SPLIT_TO_VIDEOS[dataset_split]
-    for video_metadata in VIDEO_METADATA:
-        if video_metadata.name in split_videos:
-            first_sample_starting_frame = video_metadata.first_annotated_frame
-            last_sample_starting_frame = video_metadata.last_frame - SAMPLE_DURATION_IN_FRAMES
-
-            label_image = _get_annotation(video_metadata)
-
-            file_path = os.path.join(
-                video_metadata.dataset.value, 'frames_rgb', video_metadata.name
-            )
-            for frame in range(
-                first_sample_starting_frame, last_sample_starting_frame, SAMPLE_DURATION_IN_FRAMES
-            ):
-                category = label_image[frame + MEDIAN_FRAME]
-                label = ANNOTATION_COLOR_TO_CATEGORY[category]
-                video_sample = VideoSample(
-                    file_path, frame, frame + SAMPLE_DURATION_IN_FRAMES - 1, label
-                )
-                samples.append(video_sample)
-    return samples
-
-
-def _get_annotation(video_metadata: VideoData) -> List[int]:
-    label_dir = os.path.join(
-        DATASET_PATH,
-        video_metadata.dataset.value,
-        'labels',
-        f'{video_metadata.name}-{video_metadata.annotator}',
-    )
-    return _preprocess_annotation(f'{label_dir}.png', video_metadata)
-
-
-def _preprocess_annotation(label_dir: ArrayLike, video_metadata: VideoData) -> List[int]:
-    annotated_frames = VIDEO_DURATION_IN_SECONDS * FPS
-    annotation = cv.imread(label_dir, 0)[25, :]
-    annotation = cv.resize(
-        annotation, dsize=(1, annotated_frames), interpolation=cv.INTER_NEAREST
-    )[:, 0]
-    annotation = _shift_array(annotation, video_metadata.first_annotated_frame)
-    return annotation  # type: ignore
-
-
-def _shift_array(array: ArrayLike, shift_magnitude: int) -> ArrayLike:
-    return numpy.concatenate((numpy.zeros(shift_magnitude, dtype=numpy.uint8), array))
-
-
 def create(dataset_split: DatasetSplit) -> None:
     annotation_file = DATASET_SPLIT_TO_ANNOTATION_PATH[dataset_split]
     Path(TEMP_DIR).mkdir(parents=True, exist_ok=True)
@@ -99,3 +50,67 @@ def create(dataset_split: DatasetSplit) -> None:
                 f'{video_id} {sample.first_frame} {sample.end_frame} {sample.label}\n'
             )
             f.write(annotation_string)
+
+
+def create_samples(dataset_split: DatasetSplit) -> List[VideoSample]:
+    samples = []
+    split_videos = DATASET_SPLIT_TO_VIDEOS[dataset_split]
+    for video_metadata in VIDEO_METADATA:
+        if video_metadata.name in split_videos:
+            first_sample_starting_frame = video_metadata.first_annotated_frame
+            last_sample_starting_frame = video_metadata.last_frame - SAMPLE_DURATION_IN_FRAMES
+
+            label_images = _get_annotations(video_metadata)
+
+            file_path = os.path.join(
+                video_metadata.dataset.value, 'frames_rgb', video_metadata.name
+            )
+            for frame in range(
+                first_sample_starting_frame[0],
+                last_sample_starting_frame,
+                SAMPLE_DURATION_IN_FRAMES,
+            ):
+                category_1 = label_images[0][frame + MEDIAN_FRAME]
+                category_2 = label_images[1][frame + MEDIAN_FRAME]
+                if category_1 != category_2:
+                    continue
+
+                label = ANNOTATION_COLOR_TO_CATEGORY[category_1]
+                video_sample = VideoSample(
+                    file_path, frame, frame + SAMPLE_DURATION_IN_FRAMES - 1, label
+                )
+                samples.append(video_sample)
+    return samples
+
+
+def _get_annotations(video_metadata: VideoData) -> List[List[int]]:
+    label_dir_1 = os.path.join(
+        DATASET_PATH,
+        video_metadata.dataset.value,
+        'labels',
+        f'{video_metadata.name}-{video_metadata.annotators[0]}',
+    )
+    label_dir_2 = os.path.join(
+        DATASET_PATH,
+        video_metadata.dataset.value,
+        'labels',
+        f'{video_metadata.name}-{video_metadata.annotators[0]}',
+    )
+    return [
+        _preprocess_annotation(f'{label_dir_1}.png', video_metadata.first_annotated_frame[0]),
+        _preprocess_annotation(f'{label_dir_2}.png', video_metadata.first_annotated_frame[1]),
+    ]
+
+
+def _preprocess_annotation(label_dir: ArrayLike, first_annotated_frame: int) -> List[int]:
+    annotated_frames = VIDEO_DURATION_IN_SECONDS * FPS
+    annotation = cv.imread(label_dir, 0)[25, :]
+    annotation = cv.resize(
+        annotation, dsize=(1, annotated_frames), interpolation=cv.INTER_NEAREST
+    )[:, 0]
+    annotation = _shift_array(annotation, first_annotated_frame)
+    return annotation  # type: ignore
+
+
+def _shift_array(array: ArrayLike, shift_magnitude: int) -> ArrayLike:
+    return numpy.concatenate((numpy.zeros(shift_magnitude, dtype=numpy.uint8), array))

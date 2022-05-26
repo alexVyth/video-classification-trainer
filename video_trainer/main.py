@@ -18,10 +18,8 @@ from video_trainer.model import System
 
 def main() -> None:
 
-    dataset_train, dataset_validation, dataset_test = create_datasets()
-    dataloader_train, dataloader_validation, dataloader_test = create_dataloaders(
-        dataset_train, dataset_validation, dataset_test
-    )
+    dataset_train, dataset_validation = create_datasets()
+    dataloader_train, dataloader_validation = create_dataloaders(dataset_train, dataset_validation)
 
     trainer = lightning.Trainer(
         accelerator='gpu',
@@ -38,10 +36,8 @@ def main() -> None:
         val_dataloaders=dataloader_validation,
     )
 
-    trainer.test(ckpt_path='best', dataloaders=dataloader_test)
 
-
-def create_datasets() -> Tuple[Dataset, Dataset, Dataset]:
+def create_datasets() -> Tuple[Dataset, Dataset]:
     _create_annotation_files()
     transform_train = transforms.Compose(
         [
@@ -52,7 +48,7 @@ def create_datasets() -> Tuple[Dataset, Dataset, Dataset]:
                 mean=[0.43216, 0.394666, 0.37645], std=[0.22803, 0.22145, 0.216989]
             ),
             transforms.RandomHorizontalFlip(),
-            transforms.RandomCrop(settings.TRAIN_RANDOM_CROP),
+            transforms.RandomCrop(settings.IMAGE_CROP_SIZE),
             ConvertBCHWtoCBHW(),
         ]
     )
@@ -64,7 +60,7 @@ def create_datasets() -> Tuple[Dataset, Dataset, Dataset]:
             transforms.Normalize(
                 mean=[0.43216, 0.394666, 0.37645], std=[0.22803, 0.22145, 0.216989]
             ),
-            transforms.CenterCrop(settings.VALID_CENTER_CROP),
+            transforms.CenterCrop(settings.IMAGE_CROP_SIZE),
             ConvertBCHWtoCBHW(),
         ]
     )
@@ -75,17 +71,13 @@ def create_datasets() -> Tuple[Dataset, Dataset, Dataset]:
         VideoFrameDataset(
             dataset_split=DatasetSplit.VALIDATION, test_mode=True, transform=transform_validation
         ),
-        VideoFrameDataset(
-            dataset_split=DatasetSplit.TEST, test_mode=True, transform=transform_validation
-        ),
     )
 
 
 def create_dataloaders(
     dataset_train: Dataset,
     dataset_validation: Dataset,
-    dataset_test: Dataset,
-) -> Tuple[DataLoader, DataLoader, DataLoader]:
+) -> Tuple[DataLoader, DataLoader]:
     dataloader_train = DataLoader(
         dataset=dataset_train,
         batch_size=settings.BATCH_SIZE,
@@ -100,20 +92,12 @@ def create_dataloaders(
         num_workers=multiprocessing.cpu_count(),
         pin_memory=True,
     )
-    dataloader_test = DataLoader(
-        dataset=dataset_test,
-        batch_size=settings.BATCH_SIZE,
-        shuffle=False,
-        num_workers=multiprocessing.cpu_count(),
-        pin_memory=True,
-    )
-    return dataloader_train, dataloader_validation, dataloader_test
+    return dataloader_train, dataloader_validation
 
 
 def _create_annotation_files() -> None:
     create_annotation_file(dataset_split=DatasetSplit.TRAIN)
     create_annotation_file(dataset_split=DatasetSplit.VALIDATION)
-    create_annotation_file(dataset_split=DatasetSplit.TEST)
 
 
 if __name__ == '__main__':

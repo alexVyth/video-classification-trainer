@@ -6,9 +6,9 @@ from typing import Tuple
 import cv2
 from numpy.typing import ArrayLike
 
-from video_trainer.enums import Dataset
+from video_trainer.enums import ScoredDataset
 
-DATASET = Dataset.ELIDEK
+DATASET = ScoredDataset.FOUR_CYCLE
 MOUSE_POSITION = 'RIGHT'
 VIDEO_FORMAT = 'MP4'
 

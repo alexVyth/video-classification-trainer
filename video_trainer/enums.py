@@ -1,15 +1,19 @@
 from enum import Enum
 
 
-class Dataset(Enum):
-    ELIDEK = 'ELIDEK'
-    OLD = 'OLD'
+class ScoredDataset(Enum):
+    FOUR_CYCLE = 'FOUR_CYCLE'
+
+
+class UnscoredDataset(Enum):
+    AROMATASE_PRETEST = 'AROMATASE_PRETEST'
+    FOUR_CYCLE_PRETEST = 'FOUR_CYCLE_PRETEST'
+    PGP_PRETEST = 'PGP_PRETEST'
 
 
 class DatasetSplit(Enum):
     TRAIN = 'TRAIN'
     VALIDATION = 'VALIDATION'
-    TEST = 'TEST'
 
 
 class FstCategory(Enum):

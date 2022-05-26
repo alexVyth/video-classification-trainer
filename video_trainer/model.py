@@ -18,12 +18,11 @@ from video_trainer.settings import (
     EPOCHS,
     FPS,
     FRAMES_PER_SEGMENT,
+    IMAGE_CROP_SIZE,
     IMAGE_RESIZE_SIZE,
     LEARNING_RATE,
     NUM_SEGMENTS,
     SAMPLE_DURATION_IN_FRAMES,
-    TRAIN_RANDOM_CROP,
-    VALID_CENTER_CROP, 
 )
 
 
@@ -51,11 +50,10 @@ class System(lightning.LightningModule):
         self._log_param('frames_per_segment', FRAMES_PER_SEGMENT)
         self._log_param('fps', FPS)
         self._log_param('image_resize_size', IMAGE_RESIZE_SIZE)
+        self._log_param('image_crop_size', IMAGE_CROP_SIZE)
         self._log_param('batch_size', BATCH_SIZE)
         self._log_param('epochs', EPOCHS)
         self._log_param('learning_rate', LEARNING_RATE)
-        self._log_param('train_random_crop', TRAIN_RANDOM_CROP)
-        self._log_param('valid_center_crop', VALID_CENTER_CROP)
 
     def _log_param(self, key: str, value: Any) -> None:
         self.logger.experiment.log_param(self.logger.run_id, key, value)
@@ -224,46 +222,36 @@ class R2Plus1DFineTuned(torch.nn.Module):
             param.requires_grad = False
 
 
-
 class Mymodel_1_3conv(torch.nn.Module):
     def __init__(self, num_classes: int = 5):
         super().__init__()
         self.name = 'mymodel_1_3conv'
         self.model = nn.Sequential(
-        nn.Conv3d(3, 32, kernel_size=(3,3,3), padding=1),
-        nn.ReLU(),
-        nn.MaxPool3d((2,2,2)),
-
-        nn.Conv3d(32, 64, kernel_size=(3,3,3), padding=1),
-        nn.ReLU(),
-        nn.MaxPool3d((2,2,2)),
-
-        nn.Conv3d(64, 128, kernel_size=(3,3,3), padding=1),
-        nn.ReLU(),
-        nn.MaxPool3d((2,2,2)),
-        
-        nn.Conv3d(128, 256, kernel_size=(3,3,3), padding=1),
-        nn.ReLU(),
-        nn.MaxPool3d((2,2,2)),
-        
-        
-        nn.AdaptiveAvgPool3d(1),
-
-      
-        #Flatten
-        nn.Flatten(),  
-        #Linear 1
-        nn.Linear(256, 128), 
-        #Relu
-        nn.ReLU(),
-        #BatchNorm1d
-        nn.BatchNorm1d(128),
-        #Dropout
-        nn.Dropout(p=0.15),
-        #Linear 2
-        nn.Linear(128, num_classes)
-        
-        
+            nn.Conv3d(3, 32, kernel_size=(3, 3, 3), padding=1),
+            nn.ReLU(),
+            nn.MaxPool3d((2, 2, 2)),
+            nn.Conv3d(32, 64, kernel_size=(3, 3, 3), padding=1),
+            nn.ReLU(),
+            nn.MaxPool3d((2, 2, 2)),
+            nn.Conv3d(64, 128, kernel_size=(3, 3, 3), padding=1),
+            nn.ReLU(),
+            nn.MaxPool3d((2, 2, 2)),
+            nn.Conv3d(128, 256, kernel_size=(3, 3, 3), padding=1),
+            nn.ReLU(),
+            nn.MaxPool3d((2, 2, 2)),
+            nn.AdaptiveAvgPool3d(1),
+            # Flatten
+            nn.Flatten(),
+            # Linear 1
+            nn.Linear(256, 128),
+            # Relu
+            nn.ReLU(),
+            # BatchNorm1d
+            nn.BatchNorm1d(128),
+            # Dropout
+            nn.Dropout(p=0.15),
+            # Linear 2
+            nn.Linear(128, num_classes),
         )
         self._set_parameter_requires_grad()
 

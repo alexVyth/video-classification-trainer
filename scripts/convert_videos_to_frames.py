@@ -5,17 +5,17 @@ from typing import Tuple
 
 import cv2
 
-from video_trainer.enums import Dataset
+from video_trainer.enums import UnscoredDataset
 from video_trainer.settings import DATASET_PATH, FRAMES_RGB_TEMPLATE
 
-DATASET = Dataset.OLD
+DATASET = UnscoredDataset.PGP_PRETEST
 OUT_HEIGHT_WIDTH = (112, 112)
 
-VIDEO_EXTENSION = 'mp4' if DATASET == Dataset.ELIDEK else 'mkv'
-VIDEO_PATH = os.path.join(DATASET_PATH, DATASET.value, 'videos')
+VIDEO_EXTENSION = 'mp4'
+VIDEO_PATH = os.path.join('..', 'videos', DATASET.value)
 FRAMES_RGB_PATH = os.path.join(DATASET_PATH, DATASET.value, 'frames_rgb')
 NUM_THREADS = 4
-SKIP_FRAMES = 1 if DATASET == Dataset.ELIDEK else 2
+SKIP_FRAMES = 0
 
 
 def video_to_rgb(video_filename: str, out_dir: str, resize_shape: Tuple[int, int]) -> None:
@@ -30,7 +30,7 @@ def video_to_rgb(video_filename: str, out_dir: str, resize_shape: Tuple[int, int
         out_filepath = os.path.join(out_dir, FRAMES_RGB_TEMPLATE.format(count))
         frame = cv2.resize(frame, resize_shape)
         cv2.imwrite(out_filepath, frame)
-        for _ in range(SKIP_FRAMES):
+        for _ in range(SKIP_FRAMES + 1):
             success, frame = reader.read()
         count += 1
 

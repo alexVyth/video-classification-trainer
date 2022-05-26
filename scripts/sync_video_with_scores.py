@@ -2,10 +2,10 @@ import cv2 as cv
 import numpy
 from numpy.typing import ArrayLike
 
-from video_trainer.enums import Dataset
+from video_trainer.enums import ScoredDataset
 from video_trainer.settings import FPS
 
-DATASET = Dataset.ELIDEK
+DATASET = ScoredDataset.FOUR_CYCLE
 VIDEO_ID = '1'
 ANNOTATION_FRAMES_SHIFT = 575
 
