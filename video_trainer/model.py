@@ -32,7 +32,7 @@ class System(lightning.LightningModule):
         self,
     ) -> None:
         super().__init__()
-        self.model = Resnet3DFineTuned()
+        self.model = Experimental_final()
         self.accuracy = torchmetrics.Accuracy()
         self.confusion_matrix = torchmetrics.ConfusionMatrix(num_classes=5)
         self.f1_score = torchmetrics.F1Score(num_classes=5, average='none')
@@ -239,31 +239,40 @@ class Resnet3DFineTuned(torch.nn.Module):
         for param in self.model.parameters():
             param.requires_grad = False
 
-class Mymodel_1_3conv(torch.nn.Module):
+class Experimental_final(torch.nn.Module):
     def __init__(self, num_classes: int = 5):
         super().__init__()
         self.name = 'mymodel_1_3conv'
         self.model = nn.Sequential(
-        nn.Conv3d(3, 32, kernel_size=(3,3,3), padding=1),
+        nn.Conv3d(3, 32, kernel_size=(3,3,3),stride=(1), padding='same'),
+        nn.BatchNorm3d(32),
+        nn.ReLU(),
+        
+
+        nn.Conv3d(32, 64, kernel_size=(3,3,3),stride=(1), padding='same'),
+        nn.BatchNorm3d(64),
+        nn.ReLU(),
+        nn.MaxPool3d((2,2,2)),
+        
+
+        nn.Conv3d(64, 128, kernel_size=(3,3,3),stride=(1), padding='same'),
+        nn.BatchNorm3d(128),
+        nn.ReLU(),
+
+        nn.Conv3d(128, 128, kernel_size=(3,3,3),stride=(1), padding='same'),
+        nn.BatchNorm3d(128),
+        nn.ReLU(),
+        
+        nn.Conv3d(128, 128, kernel_size=(3,3,3),stride=(1), padding='same'),
+        nn.BatchNorm3d(128),
+        nn.ReLU(),
+
+        nn.Conv3d(128, 256, kernel_size=(3,3,3),stride=(1), padding='same'),
+        nn.BatchNorm3d(256),
         nn.ReLU(),
         nn.MaxPool3d((2,2,2)),
 
-        nn.Conv3d(32, 64, kernel_size=(3,3,3), padding=1),
-        nn.ReLU(),
-        nn.MaxPool3d((2,2,2)),
-
-        nn.Conv3d(64, 128, kernel_size=(3,3,3), padding=1),
-        nn.ReLU(),
-        nn.MaxPool3d((2,2,2)),
-        
-        nn.Conv3d(128, 256, kernel_size=(3,3,3), padding=1),
-        nn.ReLU(),
-        nn.MaxPool3d((2,2,2)),
-        
-        
         nn.AdaptiveAvgPool3d(1),
-
-      
         #Flatten
         nn.Flatten(),  
         #Linear 1
