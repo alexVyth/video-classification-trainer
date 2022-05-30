@@ -87,7 +87,7 @@ def create_dataloaders(
     )
     dataloader_validation = DataLoader(
         dataset=dataset_validation,
-        batch_size=4,
+        batch_size=settings.BATCH_SIZE,
         shuffle=False,
         num_workers=multiprocessing.cpu_count(),
         pin_memory=True,

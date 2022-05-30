@@ -31,7 +31,7 @@ class System(lightning.LightningModule):
         self,
     ) -> None:
         super().__init__()
-        self.model = Mymodel_1_3conv()
+        self.model = R2Plus1DFineTuned()
         self.accuracy = torchmetrics.Accuracy()
         self.confusion_matrix = torchmetrics.ConfusionMatrix(num_classes=5)
         self.f1_score = torchmetrics.F1Score(num_classes=5, average='none')
@@ -196,7 +196,7 @@ class System(lightning.LightningModule):
         )
 
     def configure_optimizers(self) -> Optimizer:
-        optimizer = torch.optim.AdamW(self.parameters(), lr=LEARNING_RATE)
+        optimizer = torch.optim.Adam(self.parameters(), lr=LEARNING_RATE)
         return optimizer
 
     def optimizer_zero_grad(
