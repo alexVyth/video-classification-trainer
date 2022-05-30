@@ -94,7 +94,7 @@ def _get_annotations(video_metadata: VideoData) -> List[List[int]]:
         DATASET_PATH,
         video_metadata.dataset.value,
         'labels',
-        f'{video_metadata.name}-{video_metadata.annotators[0]}',
+        f'{video_metadata.name}-{video_metadata.annotators[1]}',
     )
     return [
         _preprocess_annotation(f'{label_dir_1}.png', video_metadata.first_annotated_frame[0]),
