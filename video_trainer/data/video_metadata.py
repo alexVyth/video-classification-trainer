@@ -9,9 +9,16 @@ from video_trainer.settings import FPS, VIDEO_DURATION_IN_SECONDS
 class VideoData:
     dataset: ScoredDataset
     name: str
-    first_annotated_frame: List[int]
+    _first_annotated_frame: List[int]
     last_video_frame: int
     annotators: Tuple[str, str] = ('NK', 'CD')
+
+    @property
+    def first_annotated_frame(self) -> List[int]:
+        return [
+            round(self._first_annotated_frame[0] / 2),
+            round(self._first_annotated_frame[1] / 2),
+        ]
 
     @property
     def last_frame(self) -> int:
