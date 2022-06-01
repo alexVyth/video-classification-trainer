@@ -18,6 +18,7 @@ from video_trainer.settings import (
     EPOCHS,
     FPS,
     FRAMES_PER_SEGMENT,
+    HAS_FROZEN_WEIGHTS,
     IMAGE_CROP_SIZE,
     IMAGE_RESIZE_SIZE,
     LEARNING_RATE,
@@ -31,7 +32,7 @@ class System(lightning.LightningModule):
         self,
     ) -> None:
         super().__init__()
-        self.model = R2Plus1DFineTuned()
+        self.model = R2Plus1DFineTuned(has_frozen_weights=HAS_FROZEN_WEIGHTS)
         self.accuracy = torchmetrics.Accuracy()
         self.confusion_matrix = torchmetrics.ConfusionMatrix(num_classes=5)
         self.f1_score = torchmetrics.F1Score(num_classes=5, average='none')
@@ -54,6 +55,7 @@ class System(lightning.LightningModule):
         self._log_param('batch_size', BATCH_SIZE)
         self._log_param('epochs', EPOCHS)
         self._log_param('learning_rate', LEARNING_RATE)
+        self._log_param('has_frozen_weights', HAS_FROZEN_WEIGHTS)
 
     def _log_param(self, key: str, value: Any) -> None:
         self.logger.experiment.log_param(self.logger.run_id, key, value)
@@ -206,11 +208,13 @@ class System(lightning.LightningModule):
 
 
 class R2Plus1DFineTuned(torch.nn.Module):
-    def __init__(self, num_classes: int = 5):
+    def __init__(self, num_classes: int = 5, has_frozen_weights: bool = True):
         super().__init__()
         self.name = 'r2plus1d_18'
+        self.frozen_weights = has_frozen_weights
         self.model = torchvision.models.video.r2plus1d_18(pretrained=True)
-        self._set_parameter_requires_grad()
+        if has_frozen_weights:
+            self._set_parameter_requires_grad()
         in_features = self.model.fc.in_features
         self.model.fc = torch.nn.Linear(in_features, num_classes)
 
