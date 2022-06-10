@@ -10,10 +10,13 @@ from torchvision import transforms
 
 from video_trainer.data.splitting import DATASET_SPLIT_TO_ANNOTATION_PATH
 from video_trainer.enums import DatasetSplit
+from video_trainer.loading.annotation_file import create as create_annotation_file
 from video_trainer.settings import (
     DATASET_PATH,
     FRAMES_PER_SEGMENT,
     FRAMES_RGB_TEMPLATE,
+    IMAGE_CROP_SIZE,
+    IMAGE_RESIZE_SIZE,
     NUM_SEGMENTS,
 )
 
@@ -155,3 +158,45 @@ class ConvertBCHWtoCBHW(torch.nn.Module):
     @staticmethod
     def forward(vid: torch.Tensor) -> torch.Tensor:
         return vid.permute(1, 0, 2, 3)
+
+
+def _create_annotation_files() -> None:
+    create_annotation_file(dataset_split=DatasetSplit.TRAIN)
+    create_annotation_file(dataset_split=DatasetSplit.VALIDATION)
+
+
+def create_datasets() -> Tuple[Dataset, Dataset]:
+    _create_annotation_files()
+    transform_train = transforms.Compose(
+        [
+            ImgListToTensor(),
+            transforms.ConvertImageDtype(torch.float32),
+            transforms.Resize(IMAGE_RESIZE_SIZE),
+            transforms.Normalize(
+                mean=[0.43216, 0.394666, 0.37645], std=[0.22803, 0.22145, 0.216989]
+            ),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomCrop(IMAGE_CROP_SIZE),
+            ConvertBCHWtoCBHW(),
+        ]
+    )
+    transform_validation = transforms.Compose(
+        [
+            ImgListToTensor(),
+            transforms.ConvertImageDtype(torch.float32),
+            transforms.Resize(IMAGE_RESIZE_SIZE),
+            transforms.Normalize(
+                mean=[0.43216, 0.394666, 0.37645], std=[0.22803, 0.22145, 0.216989]
+            ),
+            transforms.CenterCrop(IMAGE_CROP_SIZE),
+            ConvertBCHWtoCBHW(),
+        ]
+    )
+    return (
+        VideoFrameDataset(
+            dataset_split=DatasetSplit.TRAIN, test_mode=False, transform=transform_train
+        ),
+        VideoFrameDataset(
+            dataset_split=DatasetSplit.VALIDATION, test_mode=True, transform=transform_validation
+        ),
+    )
