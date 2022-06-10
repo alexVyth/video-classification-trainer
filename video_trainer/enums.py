@@ -9,6 +9,7 @@ class UnscoredDataset(Enum):
     AROMATASE_PRETEST = 'AROMATASE_PRETEST'
     FOUR_CYCLE_PRETEST = 'FOUR_CYCLE_PRETEST'
     PGP_PRETEST = 'PGP_PRETEST'
+    ELIDEK_PRETEST = 'ELIDEK_PRETEST'
 
 
 class DatasetSplit(Enum):
