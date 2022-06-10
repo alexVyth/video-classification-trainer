@@ -13,7 +13,7 @@ from video_trainer import settings
 from video_trainer.enums import DatasetSplit
 from video_trainer.loading.annotation_file import create as create_annotation_file
 from video_trainer.loading.dataset import ConvertBCHWtoCBHW, ImgListToTensor, VideoFrameDataset
-from video_trainer.model import System
+from video_trainer.system import System
 
 
 def main() -> None:

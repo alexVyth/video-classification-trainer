@@ -6,13 +6,12 @@ import pandas
 import pytorch_lightning as lightning
 import seaborn
 import torch
-import torch.nn as nn
 import torchmetrics
-import torchvision
 from PIL import Image
 from sklearn.metrics import ConfusionMatrixDisplay
 from torch.optim.optimizer import Optimizer
 
+from video_trainer.models import R2Plus1DFineTuned
 from video_trainer.settings import (
     BATCH_SIZE,
     EPOCHS,
@@ -205,63 +204,3 @@ class System(lightning.LightningModule):
         self, epoch: Any, batch_idx: Any, optimizer: Optimizer, optimizer_idx: Any
     ) -> None:
         optimizer.zero_grad(set_to_none=True)
-
-
-class R2Plus1DFineTuned(torch.nn.Module):
-    def __init__(self, num_classes: int = 5, has_frozen_weights: bool = True):
-        super().__init__()
-        self.name = 'r2plus1d_18'
-        self.frozen_weights = has_frozen_weights
-        self.model = torchvision.models.video.r2plus1d_18(pretrained=True)
-        if has_frozen_weights:
-            self._set_parameter_requires_grad()
-        in_features = self.model.fc.in_features
-        self.model.fc = torch.nn.Linear(in_features, num_classes)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.model(x)
-
-    def _set_parameter_requires_grad(self) -> None:
-        for param in self.model.parameters():
-            param.requires_grad = False
-
-
-class Mymodel_1_3conv(torch.nn.Module):
-    def __init__(self, num_classes: int = 5):
-        super().__init__()
-        self.name = 'mymodel_1_3conv'
-        self.model = nn.Sequential(
-            nn.Conv3d(3, 32, kernel_size=(3, 3, 3), padding=1),
-            nn.ReLU(),
-            nn.MaxPool3d((2, 2, 2)),
-            nn.Conv3d(32, 64, kernel_size=(3, 3, 3), padding=1),
-            nn.ReLU(),
-            nn.MaxPool3d((2, 2, 2)),
-            nn.Conv3d(64, 128, kernel_size=(3, 3, 3), padding=1),
-            nn.ReLU(),
-            nn.MaxPool3d((2, 2, 2)),
-            nn.Conv3d(128, 256, kernel_size=(3, 3, 3), padding=1),
-            nn.ReLU(),
-            nn.MaxPool3d((2, 2, 2)),
-            nn.AdaptiveAvgPool3d(1),
-            # Flatten
-            nn.Flatten(),
-            # Linear 1
-            nn.Linear(256, 128),
-            # Relu
-            nn.ReLU(),
-            # BatchNorm1d
-            nn.BatchNorm1d(128),
-            # Dropout
-            nn.Dropout(p=0.15),
-            # Linear 2
-            nn.Linear(128, num_classes),
-        )
-        self._set_parameter_requires_grad()
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.model(x)
-
-    def _set_parameter_requires_grad(self) -> None:
-        for param in self.model.parameters():
-            param.requires_grad = True

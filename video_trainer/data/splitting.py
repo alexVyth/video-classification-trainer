@@ -1,4 +1,3 @@
-# from random import sample
 import os
 
 from video_trainer.data.video_metadata import VIDEO_METADATA
