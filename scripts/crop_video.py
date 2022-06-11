@@ -6,9 +6,9 @@ from typing import Tuple
 import cv2
 from numpy.typing import ArrayLike
 
-from video_trainer.enums import ScoredDataset
+from video_trainer.enums import UnscoredDataset
 
-DATASET = ScoredDataset.FOUR_CYCLE
+DATASET = UnscoredDataset.ELIDEK_PRETEST
 MOUSE_POSITION = 'RIGHT'
 VIDEO_FORMAT = 'MP4'
 
@@ -16,7 +16,8 @@ VIDEO_FORMAT = 'MP4'
 def get_video_frame(directory: str) -> ArrayLike:
     video_capture = cv2.VideoCapture(directory)
     for _ in range(1000):
-        _, image = video_capture.read()
+        video_capture.read()
+    _, image = video_capture.read()
     video_capture.release()
     return image
 
@@ -37,19 +38,22 @@ def crop_video(video_source: str, video_destination: str, roi: Tuple[int, int, i
     x, y, width, height = roi
     command = (
         f'ffmpeg -hwaccel cuda -i {video_source} '
-        f'-filter:v "crop={width}:{height}:{x}:{y}" {video_destination}'
+        f'-filter:v "fps=25, crop={width}:{height}:{x}:{y}" {video_destination}'
     )
     subprocess.call(command, shell=True)
 
 
 def main() -> None:
+    rois = []
     video_directories = glob.glob(
-        f'../dataset/{DATASET.value}/**/**.{VIDEO_FORMAT}', recursive=True
+        f'../videos/{DATASET.value}/**/**.{VIDEO_FORMAT}', recursive=True
     )
     for video_source in video_directories:
-        video_destination = get_video_destination(video_source)
         frame = get_video_frame(video_source)
-        roi = get_roi(frame)
+        rois.append(get_roi(frame))
+
+    for video_source, roi in zip(video_directories, rois):
+        video_destination = get_video_destination(video_source)
         crop_video(video_source, video_destination, roi)
 
 
