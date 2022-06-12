@@ -3,15 +3,13 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import MLFlowLogger
 
 from video_trainer import settings
-from video_trainer.loading.dataloader import create_dataloaders
-from video_trainer.loading.dataset import create_datasets
+from video_trainer.loading.data_module_classification import DataModuleClassification
 from video_trainer.system import System
 
 
 def main() -> None:
 
-    dataset_train, dataset_validation = create_datasets()
-    dataloader_train, dataloader_validation = create_dataloaders(dataset_train, dataset_validation)
+    data_module_classification = DataModuleClassification()
 
     trainer = lightning.Trainer(
         accelerator='gpu',
@@ -24,8 +22,7 @@ def main() -> None:
 
     trainer.fit(
         model=System(),
-        train_dataloaders=dataloader_train,
-        val_dataloaders=dataloader_validation,
+        datamodule=data_module_classification,
     )
 
 
