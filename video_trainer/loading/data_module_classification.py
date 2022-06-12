@@ -7,6 +7,7 @@ from torch.utils.data.dataloader import DataLoader
 from torchvision import transforms
 
 from video_trainer import settings
+from video_trainer.data.video_metadata import VIDEO_METADATA
 from video_trainer.enums import DatasetSplit
 from video_trainer.loading.annotation_file import create as create_annotation_file
 from video_trainer.loading.dataset import VideoFrameDataset
@@ -16,8 +17,10 @@ from video_trainer.settings import IMAGE_CROP_SIZE, IMAGE_RESIZE_SIZE
 
 class DataModuleClassification(LightningDataModule):
     def setup(self, stage: Optional[str] = None) -> None:
-        create_annotation_file(dataset_split=DatasetSplit.TRAIN)
-        create_annotation_file(dataset_split=DatasetSplit.VALIDATION)
+        create_annotation_file(dataset_split=DatasetSplit.TRAIN, videos_metadata=VIDEO_METADATA)
+        create_annotation_file(
+            dataset_split=DatasetSplit.VALIDATION, videos_metadata=VIDEO_METADATA
+        )
         self.dataset_train = VideoFrameDataset(
             dataset_split=DatasetSplit.TRAIN,
             test_mode=False,

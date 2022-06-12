@@ -2,14 +2,14 @@ import os
 from dataclasses import dataclass
 from math import ceil
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import cv2 as cv
 import numpy
 from numpy.typing import ArrayLike
 
 from video_trainer.data.splitting import DATASET_SPLIT_TO_ANNOTATION_PATH, DATASET_SPLIT_TO_VIDEOS
-from video_trainer.data.video_metadata import VIDEO_METADATA, VideoData
+from video_trainer.data.video_metadata import ScoredData, VideoData
 from video_trainer.enums import DatasetSplit, FstCategory
 from video_trainer.settings import (
     DATASET_PATH,
@@ -38,11 +38,14 @@ class VideoSample:
     label: Optional[int]
 
 
-def create(dataset_split: DatasetSplit, has_labels: bool = True) -> None:
+def create(
+    dataset_split: DatasetSplit,
+    videos_metadata: Union[List[VideoData], List[ScoredData]],
+) -> None:
     annotation_file = DATASET_SPLIT_TO_ANNOTATION_PATH[dataset_split]
     Path(TEMP_DIR).mkdir(parents=True, exist_ok=True)
 
-    samples = _create_samples(dataset_split, has_labels)
+    samples = _create_samples(dataset_split, videos_metadata)
     with open(annotation_file, mode='w', encoding='utf-8') as f:
         for sample in samples:
             video_id = f'{str(sample.video_path)}'
@@ -52,19 +55,26 @@ def create(dataset_split: DatasetSplit, has_labels: bool = True) -> None:
             f.write(annotation_string)
 
 
-def _create_samples(dataset_split: DatasetSplit, has_labels: bool) -> List[VideoSample]:
+def _create_samples(
+    dataset_split: DatasetSplit,
+    videos_metadata: Union[List[VideoData], List[ScoredData]],
+) -> List[VideoSample]:
     samples = []
     split_videos = DATASET_SPLIT_TO_VIDEOS[dataset_split]
-    for video_metadata in VIDEO_METADATA:
+    for video_metadata in videos_metadata:
         if video_metadata.name in split_videos:
-            first_sample_starting_frame = video_metadata.first_annotated_frame
+            first_sample_starting_frame = (
+                video_metadata.first_annotated_frame
+                if isinstance(video_metadata, ScoredData)
+                else [1]
+            )
             last_sample_starting_frame = video_metadata.last_frame - SAMPLE_DURATION_IN_FRAMES
 
             file_path = os.path.join(
                 video_metadata.dataset.value, 'frames_rgb', video_metadata.name
             )
 
-            if has_labels:
+            if isinstance(video_metadata, ScoredData):
                 label_images = _get_annotations(video_metadata)
 
             for frame in range(
@@ -74,7 +84,7 @@ def _create_samples(dataset_split: DatasetSplit, has_labels: bool) -> List[Video
             ):
                 label = None
 
-                if has_labels:
+                if isinstance(video_metadata, ScoredData):
                     category_1 = label_images[0][frame + MEDIAN_FRAME]
                     category_2 = label_images[1][frame + MEDIAN_FRAME]
                     if category_1 != category_2:
@@ -88,7 +98,7 @@ def _create_samples(dataset_split: DatasetSplit, has_labels: bool) -> List[Video
     return samples
 
 
-def _get_annotations(video_metadata: VideoData) -> List[List[int]]:
+def _get_annotations(video_metadata: ScoredData) -> List[List[int]]:
     label_dir_1 = os.path.join(
         DATASET_PATH,
         video_metadata.dataset.value,
