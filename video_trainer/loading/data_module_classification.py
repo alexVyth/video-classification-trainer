@@ -15,9 +15,6 @@ from video_trainer.settings import IMAGE_CROP_SIZE, IMAGE_RESIZE_SIZE
 
 
 class DataModuleClassification(LightningDataModule):
-    def __init__(self) -> None:
-        super().__init__()
-
     def setup(self, stage: Optional[str] = None) -> None:
         create_annotation_file(dataset_split=DatasetSplit.TRAIN)
         create_annotation_file(dataset_split=DatasetSplit.VALIDATION)
