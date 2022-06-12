@@ -2,7 +2,7 @@ import os
 from dataclasses import dataclass
 from math import ceil
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 import cv2 as cv
 import numpy
@@ -35,14 +35,14 @@ class VideoSample:
     video_path: str
     first_frame: int
     end_frame: int
-    label: int
+    label: Optional[int]
 
 
-def create(dataset_split: DatasetSplit) -> None:
+def create(dataset_split: DatasetSplit, has_labels: bool = True) -> None:
     annotation_file = DATASET_SPLIT_TO_ANNOTATION_PATH[dataset_split]
     Path(TEMP_DIR).mkdir(parents=True, exist_ok=True)
 
-    samples = create_samples(dataset_split)
+    samples = _create_samples(dataset_split, has_labels)
     with open(annotation_file, mode='w', encoding='utf-8') as f:
         for sample in samples:
             video_id = f'{str(sample.video_path)}'
@@ -52,7 +52,7 @@ def create(dataset_split: DatasetSplit) -> None:
             f.write(annotation_string)
 
 
-def create_samples(dataset_split: DatasetSplit) -> List[VideoSample]:
+def _create_samples(dataset_split: DatasetSplit, has_labels: bool) -> List[VideoSample]:
     samples = []
     split_videos = DATASET_SPLIT_TO_VIDEOS[dataset_split]
     for video_metadata in VIDEO_METADATA:
@@ -60,22 +60,27 @@ def create_samples(dataset_split: DatasetSplit) -> List[VideoSample]:
             first_sample_starting_frame = video_metadata.first_annotated_frame
             last_sample_starting_frame = video_metadata.last_frame - SAMPLE_DURATION_IN_FRAMES
 
-            label_images = _get_annotations(video_metadata)
-
             file_path = os.path.join(
                 video_metadata.dataset.value, 'frames_rgb', video_metadata.name
             )
+
+            if has_labels:
+                label_images = _get_annotations(video_metadata)
+
             for frame in range(
                 first_sample_starting_frame[0],
                 last_sample_starting_frame,
                 SAMPLE_DURATION_IN_FRAMES,
             ):
-                category_1 = label_images[0][frame + MEDIAN_FRAME]
-                category_2 = label_images[1][frame + MEDIAN_FRAME]
-                if category_1 != category_2:
-                    continue
+                label = None
 
-                label = ANNOTATION_COLOR_TO_CATEGORY[category_1]
+                if has_labels:
+                    category_1 = label_images[0][frame + MEDIAN_FRAME]
+                    category_2 = label_images[1][frame + MEDIAN_FRAME]
+                    if category_1 != category_2:
+                        continue
+                    label = ANNOTATION_COLOR_TO_CATEGORY[category_1]
+
                 video_sample = VideoSample(
                     file_path, frame, frame + SAMPLE_DURATION_IN_FRAMES - 1, label
                 )
