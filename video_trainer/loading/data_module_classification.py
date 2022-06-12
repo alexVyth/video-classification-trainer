@@ -9,7 +9,8 @@ from torchvision import transforms
 from video_trainer import settings
 from video_trainer.enums import DatasetSplit
 from video_trainer.loading.annotation_file import create as create_annotation_file
-from video_trainer.loading.dataset import ConvertBCHWtoCBHW, ImgListToTensor, VideoFrameDataset
+from video_trainer.loading.dataset import VideoFrameDataset
+from video_trainer.loading.transforms import ConvertBCHWtoCBHW, ImgListToTensor, NoneTransform
 from video_trainer.settings import IMAGE_CROP_SIZE, IMAGE_RESIZE_SIZE
 
 
@@ -23,15 +24,15 @@ class DataModuleClassification(LightningDataModule):
         self.dataset_train = VideoFrameDataset(
             dataset_split=DatasetSplit.TRAIN,
             test_mode=False,
-            transform=self._get_transform_train(),
+            transform=self._get_transform(is_train=True),
         )
         self.dataset_validation = VideoFrameDataset(
             dataset_split=DatasetSplit.VALIDATION,
             test_mode=True,
-            transform=self._get_transform_val(),
+            transform=self._get_transform(is_train=False),
         )
 
-    def _get_transform_train(self) -> transforms.Compose:
+    def _get_transform(self, is_train: bool = True) -> transforms.Compose:
         return transforms.Compose(
             [
                 ImgListToTensor(),
@@ -40,22 +41,10 @@ class DataModuleClassification(LightningDataModule):
                 transforms.Normalize(
                     mean=[0.43216, 0.394666, 0.37645], std=[0.22803, 0.22145, 0.216989]
                 ),
-                transforms.RandomHorizontalFlip(),
-                transforms.RandomCrop(IMAGE_CROP_SIZE),
-                ConvertBCHWtoCBHW(),
-            ]
-        )
-
-    def _get_transform_val(self) -> transforms.Compose:
-        return transforms.Compose(
-            [
-                ImgListToTensor(),
-                transforms.ConvertImageDtype(torch.float32),
-                transforms.Resize(IMAGE_RESIZE_SIZE),
-                transforms.Normalize(
-                    mean=[0.43216, 0.394666, 0.37645], std=[0.22803, 0.22145, 0.216989]
-                ),
-                transforms.CenterCrop(IMAGE_CROP_SIZE),
+                transforms.RandomHorizontalFlip() if is_train else NoneTransform(),
+                transforms.RandomCrop(IMAGE_CROP_SIZE)
+                if is_train
+                else transforms.CenterCrop(IMAGE_CROP_SIZE),
                 ConvertBCHWtoCBHW(),
             ]
         )

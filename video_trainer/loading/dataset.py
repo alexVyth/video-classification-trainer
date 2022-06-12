@@ -6,7 +6,6 @@ import numpy as np
 import torch
 from PIL import Image
 from torch.utils.data import Dataset
-from torchvision import transforms
 
 from video_trainer.data.splitting import DATASET_SPLIT_TO_ANNOTATION_PATH
 from video_trainer.enums import DatasetSplit
@@ -139,19 +138,3 @@ class VideoFrameDataset(Dataset):
 
     def __len__(self) -> int:
         return len(self.video_list)
-
-
-class ImgListToTensor(torch.nn.Module):
-    @staticmethod
-    def forward(
-        img_list: List[Image.Image],
-    ) -> torch.Tensor:
-        return torch.stack([transforms.functional.to_tensor(pic) for pic in img_list])
-
-
-class ConvertBCHWtoCBHW(torch.nn.Module):
-    """Convert tensor from (B, C, H, W) to (C, B, H, W)"""
-
-    @staticmethod
-    def forward(vid: torch.Tensor) -> torch.Tensor:
-        return vid.permute(1, 0, 2, 3)
