@@ -1,9 +1,8 @@
 import os
 import os.path
-from typing import Any, List, Tuple, Union
+from typing import Any, List
 
 import numpy as np
-import torch
 from PIL import Image
 from torch.utils.data import Dataset
 
@@ -51,6 +50,7 @@ class VideoFrameDataset(Dataset):
         frames_per_segment: int = FRAMES_PER_SEGMENT,
         transform: Any = None,
         test_mode: bool = False,
+        has_label: bool = True,
     ):
         super().__init__()
 
@@ -59,6 +59,7 @@ class VideoFrameDataset(Dataset):
         self.frames_per_segment = frames_per_segment
         self.transform = transform
         self.test_mode = test_mode
+        self.has_label = has_label
 
         self._parse_annotationfile()
         self._sanity_check_samples()
@@ -85,9 +86,7 @@ class VideoFrameDataset(Dataset):
                     f'error when trying to load this video.\n'
                 )
 
-    def __getitem__(
-        self, idx: int
-    ) -> Union[Tuple[List[Image.Image], int], Tuple[torch.Tensor, int], Tuple[Any, int]]:
+    def __getitem__(self, idx: int) -> Any:
         record: VideoRecord = self.video_list[idx]
 
         frame_start_indices: np.ndarray = self._get_start_indices(record)
@@ -117,9 +116,7 @@ class VideoFrameDataset(Dataset):
 
         return start_indices
 
-    def _get(
-        self, record: VideoRecord, frame_start_indices: np.ndarray
-    ) -> Union[Tuple[List[Image.Image], int], Tuple[torch.Tensor, int], Tuple[Any, int]]:
+    def _get(self, record: VideoRecord, frame_start_indices: np.ndarray) -> Any:
         frame_start_indices = frame_start_indices + record.start_frame
         images = []
         for start_index in frame_start_indices:
@@ -134,6 +131,8 @@ class VideoFrameDataset(Dataset):
         if self.transform is not None:
             images = self.transform(images)
 
+        if not self.has_label:
+            return images
         return images, record.label
 
     def __len__(self) -> int:
