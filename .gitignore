@@ -131,4 +131,4 @@ dmypy.json
 mlruns
 lightning_logs
 tmp
-videos_autoencoder
+videos_autoencoder*
