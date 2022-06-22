@@ -1,8 +1,9 @@
 import torch
 import torchvision
-from torch.nn import Conv3d, ReLU
+from torch.nn import Conv3d, Flatten, ReLU
 from torch.nn.modules.activation import Tanh
 from torch.nn.modules.conv import ConvTranspose3d
+from torch.nn.modules.linear import Linear
 
 
 class R2Plus1DFineTuned(torch.nn.Module):
@@ -113,6 +114,19 @@ class DecoderV3(torch.nn.Module):
             ConvTranspose3d(in_channels=1, out_channels=2, kernel_size=4, padding=1, stride=2),
             ReLU(),
             ConvTranspose3d(in_channels=2, out_channels=3, kernel_size=4, padding=1, stride=2),
+            ReLU(),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.net(x)
+
+
+class ClassifierV3(torch.nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.net = torch.nn.Sequential(
+            Flatten(),
+            Linear(in_features=3136, out_features=5),
             ReLU(),
         )
 
