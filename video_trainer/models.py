@@ -1,7 +1,6 @@
 import torch
 import torchvision
 from torch.nn import Conv3d, Flatten, ReLU
-from torch.nn.modules.activation import Tanh
 from torch.nn.modules.conv import ConvTranspose3d
 from torch.nn.modules.linear import Linear
 
@@ -25,7 +24,7 @@ class R2Plus1DFineTuned(torch.nn.Module):
             param.requires_grad = False
 
 
-class Encoder(torch.nn.Module):
+class Encoder3LayerRGB(torch.nn.Module):
     def __init__(self) -> None:
         super().__init__()
         self.net = torch.nn.Sequential(
@@ -41,7 +40,7 @@ class Encoder(torch.nn.Module):
         return self.net(x)
 
 
-class Decoder(torch.nn.Module):
+class Decoder3LayerRGB(torch.nn.Module):
     def __init__(self) -> None:
         super().__init__()
         self.net = torch.nn.Sequential(
@@ -50,14 +49,14 @@ class Decoder(torch.nn.Module):
             ConvTranspose3d(in_channels=3, out_channels=3, kernel_size=4, padding=1, stride=2),
             ReLU(),
             ConvTranspose3d(in_channels=3, out_channels=3, kernel_size=4, padding=1, stride=2),
-            Tanh(),
+            ReLU(),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.net(x)
 
 
-class EncoderV2(torch.nn.Module):
+class EncoderWide(torch.nn.Module):
     def __init__(self) -> None:
         super().__init__()
         self.net = torch.nn.Sequential(
@@ -75,7 +74,7 @@ class EncoderV2(torch.nn.Module):
         return self.net(x)
 
 
-class DecoderV2(torch.nn.Module):
+class DecoderWide(torch.nn.Module):
     def __init__(self) -> None:
         super().__init__()
         self.net = torch.nn.Sequential(
@@ -84,16 +83,16 @@ class DecoderV2(torch.nn.Module):
             ConvTranspose3d(in_channels=32, out_channels=64, kernel_size=4, padding=1, stride=2),
             ReLU(),
             ConvTranspose3d(in_channels=64, out_channels=32, kernel_size=4, padding=1, stride=2),
-            Tanh(),
+            ReLU(),
             ConvTranspose3d(in_channels=32, out_channels=3, kernel_size=4, padding=1, stride=2),
-            Tanh(),
+            ReLU(),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.net(x)
 
 
-class EncoderV3(torch.nn.Module):
+class Encoder2Layer(torch.nn.Module):
     def __init__(self) -> None:
         super().__init__()
         self.net = torch.nn.Sequential(
@@ -107,7 +106,7 @@ class EncoderV3(torch.nn.Module):
         return self.net(x)
 
 
-class DecoderV3(torch.nn.Module):
+class Decoder2Layer(torch.nn.Module):
     def __init__(self) -> None:
         super().__init__()
         self.net = torch.nn.Sequential(
@@ -134,7 +133,7 @@ class ClassifierV3(torch.nn.Module):
         return self.net(x)
 
 
-class EncoderV4(torch.nn.Module):
+class Encoder3Layer(torch.nn.Module):
     def __init__(self) -> None:
         super().__init__()
         self.net = torch.nn.Sequential(
@@ -150,7 +149,7 @@ class EncoderV4(torch.nn.Module):
         return self.net(x)
 
 
-class DecoderV4(torch.nn.Module):
+class Decoder3Layer(torch.nn.Module):
     def __init__(self) -> None:
         super().__init__()
         self.net = torch.nn.Sequential(
@@ -159,6 +158,44 @@ class DecoderV4(torch.nn.Module):
             ConvTranspose3d(in_channels=1, out_channels=2, kernel_size=4, padding=1, stride=2),
             ReLU(),
             ConvTranspose3d(in_channels=2, out_channels=3, kernel_size=4, padding=1, stride=2),
+            ReLU(),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.net(x)
+
+
+class Encoder3LayerReducedTimeStride(torch.nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.net = torch.nn.Sequential(
+            Conv3d(in_channels=3, out_channels=2, kernel_size=4, padding=1, stride=(2, 2, 2)),
+            ReLU(),
+            Conv3d(in_channels=2, out_channels=1, kernel_size=4, padding=1, stride=(1, 2, 2)),
+            ReLU(),
+            Conv3d(in_channels=1, out_channels=1, kernel_size=4, padding=1, stride=(1, 2, 2)),
+            ReLU(),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.net(x)
+
+
+class Decoder3LayerReducedTimeStride(torch.nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.net = torch.nn.Sequential(
+            ConvTranspose3d(
+                in_channels=1, out_channels=1, kernel_size=4, padding=1, stride=(1, 2, 2)
+            ),
+            ReLU(),
+            ConvTranspose3d(
+                in_channels=1, out_channels=2, kernel_size=4, padding=1, stride=(1, 2, 2)
+            ),
+            ReLU(),
+            ConvTranspose3d(
+                in_channels=2, out_channels=3, kernel_size=4, padding=1, stride=(2, 2, 2)
+            ),
             ReLU(),
         )
 
