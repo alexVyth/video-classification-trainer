@@ -56,6 +56,34 @@ class Decoder3LayerRGB(torch.nn.Module):
         return self.net(x)
 
 
+class Encoder2LayerRGB(torch.nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.net = torch.nn.Sequential(
+            Conv3d(in_channels=3, out_channels=3, kernel_size=4, padding=1, stride=2),
+            ReLU(),
+            Conv3d(in_channels=3, out_channels=3, kernel_size=4, padding=1, stride=2),
+            ReLU(),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.net(x)
+
+
+class Decoder2LayerRGB(torch.nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.net = torch.nn.Sequential(
+            ConvTranspose3d(in_channels=3, out_channels=3, kernel_size=4, padding=1, stride=2),
+            ReLU(),
+            ConvTranspose3d(in_channels=3, out_channels=3, kernel_size=4, padding=1, stride=2),
+            ReLU(),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.net(x)
+
+
 class EncoderWide(torch.nn.Module):
     def __init__(self) -> None:
         super().__init__()

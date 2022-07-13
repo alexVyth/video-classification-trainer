@@ -10,7 +10,7 @@ import torchmetrics
 from torch.nn.functional import mse_loss
 from torch.optim.optimizer import Optimizer
 
-from video_trainer.models import Decoder3LayerReducedTimeStride, Encoder3LayerReducedTimeStride
+from video_trainer import models
 from video_trainer.settings import (
     BATCH_SIZE,
     EPOCHS,
@@ -31,8 +31,8 @@ class Autoencoder(lightning.LightningModule):
         self,
     ) -> None:
         super().__init__()
-        self.encoder = Encoder3LayerReducedTimeStride()
-        self.decoder = Decoder3LayerReducedTimeStride()
+        self.encoder = models.Encoder2LayerRGB()
+        self.decoder = models.Decoder2LayerRGB()
         self.accuracy = torchmetrics.Accuracy()
         self.criterion = torch.nn.MSELoss()
 
