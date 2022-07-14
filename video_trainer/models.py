@@ -230,6 +230,39 @@ class Decoder3LayerReducedTimeStride(torch.nn.Module):
         return self.net(x)
 
 
+class Encoder2LayerReducedTimeStride(torch.nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.net = torch.nn.Sequential(
+            Conv3d(in_channels=3, out_channels=2, kernel_size=4, padding=1, stride=(2, 2, 2)),
+            ReLU(),
+            Conv3d(in_channels=2, out_channels=1, kernel_size=4, padding=1, stride=(1, 2, 2)),
+            ReLU(),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.net(x)
+
+
+class Decoder2LayerReducedTimeStride(torch.nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.net = torch.nn.Sequential(
+            ReLU(),
+            ConvTranspose3d(
+                in_channels=1, out_channels=2, kernel_size=4, padding=1, stride=(1, 2, 2)
+            ),
+            ReLU(),
+            ConvTranspose3d(
+                in_channels=2, out_channels=3, kernel_size=4, padding=1, stride=(2, 2, 2)
+            ),
+            ReLU(),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.net(x)
+
+
 class Classifier3LayerReducedTimeStride(torch.nn.Module):
     def __init__(self) -> None:
         super().__init__()
