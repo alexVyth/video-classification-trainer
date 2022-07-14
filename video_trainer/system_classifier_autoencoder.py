@@ -11,7 +11,7 @@ from PIL import Image
 from sklearn.metrics import ConfusionMatrixDisplay
 from torch.optim.optimizer import Optimizer
 
-from video_trainer.models import ClassifierV3
+from video_trainer import models
 from video_trainer.settings import (
     BATCH_SIZE,
     EPOCHS,
@@ -33,9 +33,9 @@ class System(lightning.LightningModule):
     ) -> None:
         super().__init__()
         self.model = Autoencoder.load_from_checkpoint(
-            './mlruns/0/822b9fd95fde4a85b76e215218322b65/checkpoints/epoch=29-step=83400.ckpt'
+            './mlruns/0/7eacddab2007438883fa52ed84282d9a/checkpoints/epoch=144-step=403100.ckpt'
         )
-        self.model.decoder = ClassifierV3()
+        self.model.decoder = models.Classifier3LayerReducedTimeStride()
         self.accuracy = torchmetrics.Accuracy()
         self.confusion_matrix = torchmetrics.ConfusionMatrix(num_classes=5)
         self.f1_score = torchmetrics.F1Score(num_classes=5, average='none')

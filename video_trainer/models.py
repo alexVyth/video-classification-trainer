@@ -1,8 +1,7 @@
 import torch
 import torchvision
-from torch.nn import Conv3d, Flatten, ReLU
+from torch.nn import Conv3d, Flatten, Linear, ReLU
 from torch.nn.modules.conv import ConvTranspose3d
-from torch.nn.modules.linear import Linear
 
 
 class R2Plus1DFineTuned(torch.nn.Module):
@@ -225,6 +224,20 @@ class Decoder3LayerReducedTimeStride(torch.nn.Module):
                 in_channels=2, out_channels=3, kernel_size=4, padding=1, stride=(2, 2, 2)
             ),
             ReLU(),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.net(x)
+
+
+class Classifier3LayerReducedTimeStride(torch.nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.net = torch.nn.Sequential(
+            Conv3d(1, 1, 4, stride=2),
+            ReLU(),
+            Flatten(),
+            Linear(in_features=72, out_features=5),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
