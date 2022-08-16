@@ -64,9 +64,6 @@ class DataModuleAutoEncoding(LightningDataModule):
                 ImgListToTensor(),
                 transforms.ConvertImageDtype(torch.float32),
                 transforms.Resize(IMAGE_RESIZE_SIZE),
-                transforms.Normalize(
-                    mean=[0.43216, 0.394666, 0.37645], std=[0.22803, 0.22145, 0.216989]
-                ),
                 transforms.RandomHorizontalFlip() if is_train else NoneTransform(),
                 transforms.RandomCrop(IMAGE_CROP_SIZE)
                 if is_train

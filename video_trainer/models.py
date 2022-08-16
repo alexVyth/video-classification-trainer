@@ -1,6 +1,6 @@
 import torch
 import torchvision
-from torch.nn import Conv3d, Flatten, Linear, ReLU
+from torch.nn import Conv3d, Flatten, Linear, ReLU, Sigmoid
 from torch.nn.modules.conv import ConvTranspose3d
 
 
@@ -48,7 +48,7 @@ class Decoder3LayerRGB(torch.nn.Module):
             ConvTranspose3d(in_channels=3, out_channels=3, kernel_size=4, padding=1, stride=2),
             ReLU(),
             ConvTranspose3d(in_channels=3, out_channels=3, kernel_size=4, padding=1, stride=2),
-            ReLU(),
+            Sigmoid(),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -76,7 +76,7 @@ class Decoder2LayerRGB(torch.nn.Module):
             ConvTranspose3d(in_channels=3, out_channels=3, kernel_size=4, padding=1, stride=2),
             ReLU(),
             ConvTranspose3d(in_channels=3, out_channels=3, kernel_size=4, padding=1, stride=2),
-            ReLU(),
+            Sigmoid(),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -112,7 +112,7 @@ class DecoderWide(torch.nn.Module):
             ConvTranspose3d(in_channels=64, out_channels=32, kernel_size=4, padding=1, stride=2),
             ReLU(),
             ConvTranspose3d(in_channels=32, out_channels=3, kernel_size=4, padding=1, stride=2),
-            ReLU(),
+            Sigmoid(),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -140,7 +140,7 @@ class Decoder2Layer(torch.nn.Module):
             ConvTranspose3d(in_channels=1, out_channels=2, kernel_size=4, padding=1, stride=2),
             ReLU(),
             ConvTranspose3d(in_channels=2, out_channels=3, kernel_size=4, padding=1, stride=2),
-            ReLU(),
+            Sigmoid(),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -185,7 +185,7 @@ class Decoder3Layer(torch.nn.Module):
             ConvTranspose3d(in_channels=1, out_channels=2, kernel_size=4, padding=1, stride=2),
             ReLU(),
             ConvTranspose3d(in_channels=2, out_channels=3, kernel_size=4, padding=1, stride=2),
-            ReLU(),
+            Sigmoid(),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -223,7 +223,7 @@ class Decoder3LayerReducedTimeStride(torch.nn.Module):
             ConvTranspose3d(
                 in_channels=2, out_channels=3, kernel_size=4, padding=1, stride=(2, 2, 2)
             ),
-            ReLU(),
+            Sigmoid(),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -256,7 +256,7 @@ class Decoder2LayerReducedTimeStride(torch.nn.Module):
             ConvTranspose3d(
                 in_channels=2, out_channels=3, kernel_size=4, padding=1, stride=(2, 2, 2)
             ),
-            ReLU(),
+            Sigmoid(),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:

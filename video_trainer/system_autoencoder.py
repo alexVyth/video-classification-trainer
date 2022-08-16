@@ -104,9 +104,6 @@ class Autoencoder(lightning.LightningModule):
 
         for i in range(total_frames):
             frame_numpy = video_numpy[:, i, :, :]
-            frame_numpy = (frame_numpy - numpy.min(frame_numpy)) / (
-                numpy.max(frame_numpy) - numpy.min(frame_numpy)
-            )
             frame_numpy = numpy.round(255 * frame_numpy).astype(numpy.uint8)
             frame_numpy = numpy.swapaxes(frame_numpy, 0, 2)
             frame_numpy = numpy.swapaxes(frame_numpy, 0, 1)
