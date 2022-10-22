@@ -1,6 +1,6 @@
 import torch
 import torchvision
-from torch.nn import Conv3d, Flatten, Linear, ReLU, Sigmoid
+from torch.nn import Conv3d, Flatten, Linear, ReLU, Sigmoid, Unflatten
 from torch.nn.modules.conv import ConvTranspose3d
 
 
@@ -271,6 +271,38 @@ class Classifier3LayerReducedTimeStride(torch.nn.Module):
             ReLU(),
             Flatten(),
             Linear(in_features=72, out_features=5),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.net(x)
+
+
+class Encoder2LayerRGBLinear256(torch.nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.net = torch.nn.Sequential(
+            Conv3d(in_channels=3, out_channels=3, kernel_size=4, padding=1, stride=2),
+            ReLU(),
+            Conv3d(in_channels=3, out_channels=3, kernel_size=4, padding=1, stride=2),
+            ReLU(),
+            Flatten(),
+            Linear(in_features=9408, out_features=256),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.net(x)
+
+
+class Decoder2LayerRGBLinear256(torch.nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.net = torch.nn.Sequential(
+            Linear(in_features=256, out_features=9408),
+            Unflatten(1, [3, 4, 28, 28]),
+            ConvTranspose3d(in_channels=3, out_channels=3, kernel_size=4, padding=1, stride=2),
+            ReLU(),
+            ConvTranspose3d(in_channels=3, out_channels=3, kernel_size=4, padding=1, stride=2),
+            Sigmoid(),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
