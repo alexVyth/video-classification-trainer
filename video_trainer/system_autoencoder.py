@@ -31,8 +31,8 @@ class Autoencoder(lightning.LightningModule):
         self,
     ) -> None:
         super().__init__()
-        self.encoder = models.Encoder2LayerRGBLinear256()
-        self.decoder = models.Decoder2LayerRGBLinear256()
+        self.encoder = models.Encoder2LayerRGBLinear1024_256()
+        self.decoder = models.Decoder2LayerRGBLinear1024_256()
         self.accuracy = torchmetrics.Accuracy()
         self.criterion = torch.nn.MSELoss()
 
