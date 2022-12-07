@@ -10,7 +10,6 @@ import torchmetrics
 from torch.nn.functional import mse_loss
 from torch.optim.optimizer import Optimizer
 
-from video_trainer import models
 from video_trainer.settings import (
     BATCH_SIZE,
     EPOCHS,
@@ -29,11 +28,13 @@ VIDEO_DIR = './videos_autoencoder'
 class Autoencoder(lightning.LightningModule):
     def __init__(
         self,
+        encoder: torch.nn.Module,
+        decoder: torch.nn.Module,
     ) -> None:
         super().__init__()
-        self.encoder = models.Encoder2LayerRGBLinear1024_256()
-        self.decoder = models.Decoder2LayerRGBLinear1024_256()
-        self.accuracy = torchmetrics.Accuracy()
+        self.encoder = encoder()
+        self.decoder = decoder()
+        self.accuracy = torchmetrics.Accuracy(task='multiclass', num_classes=5)
         self.criterion = torch.nn.MSELoss()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:

@@ -11,7 +11,7 @@ from PIL import Image
 from sklearn.metrics import ConfusionMatrixDisplay
 from torch.optim.optimizer import Optimizer
 
-from video_trainer.models import R2Plus1DFineTuned
+from video_trainer.models import MVitV2FineTuned
 from video_trainer.settings import (
     BATCH_SIZE,
     EPOCHS,
@@ -31,12 +31,12 @@ class System(lightning.LightningModule):
         self,
     ) -> None:
         super().__init__()
-        self.model = R2Plus1DFineTuned(has_frozen_weights=HAS_FROZEN_WEIGHTS)
-        self.accuracy = torchmetrics.Accuracy()
-        self.confusion_matrix = torchmetrics.ConfusionMatrix(num_classes=5)
-        self.f1_score = torchmetrics.F1Score(num_classes=5, average='none')
-        self.prec = torchmetrics.Precision(num_classes=5, average='none')
-        self.recall = torchmetrics.Recall(num_classes=5, average='none')
+        self.model = MVitV2FineTuned(has_frozen_weights=HAS_FROZEN_WEIGHTS)
+        self.accuracy = torchmetrics.Accuracy(task='multiclass', num_classes=5)
+        self.confusion_matrix = torchmetrics.ConfusionMatrix(task='multiclass', num_classes=5)
+        self.f1_score = torchmetrics.F1Score(task='multiclass', num_classes=5, average='none')
+        self.prec = torchmetrics.Precision(task='multiclass', num_classes=5, average='none')
+        self.recall = torchmetrics.Recall(task='multiclass', num_classes=5, average='none')
         self.criterion = torch.nn.CrossEntropyLoss()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:

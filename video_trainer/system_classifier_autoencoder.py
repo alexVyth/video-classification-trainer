@@ -11,7 +11,6 @@ from PIL import Image
 from sklearn.metrics import ConfusionMatrixDisplay
 from torch.optim.optimizer import Optimizer
 
-from video_trainer import models
 from video_trainer.settings import (
     BATCH_SIZE,
     EPOCHS,
@@ -25,22 +24,24 @@ from video_trainer.settings import (
     SAMPLE_DURATION_IN_FRAMES,
 )
 from video_trainer.system_autoencoder import Autoencoder
+from video_trainer.train_classifier_autoencoder import ClassifierConfigSet
 
 
 class System(lightning.LightningModule):
     def __init__(
         self,
+        config: ClassifierConfigSet,
     ) -> None:
         super().__init__()
         self.model = Autoencoder.load_from_checkpoint(
-            './mlruns/0/7eacddab2007438883fa52ed84282d9a/checkpoints/epoch=144-step=403100.ckpt'
+            config.encoder_model_dir, encoder=config.encoder, decoder=config.decoder
         )
-        self.model.decoder = models.Classifier3LayerReducedTimeStride()
-        self.accuracy = torchmetrics.Accuracy()
-        self.confusion_matrix = torchmetrics.ConfusionMatrix(num_classes=5)
-        self.f1_score = torchmetrics.F1Score(num_classes=5, average='none')
-        self.prec = torchmetrics.Precision(num_classes=5, average='none')
-        self.recall = torchmetrics.Recall(num_classes=5, average='none')
+        self.model.decoder = config.classifier()
+        self.accuracy = torchmetrics.Accuracy(task='multiclass', num_classes=5)
+        self.confusion_matrix = torchmetrics.ConfusionMatrix(task='multiclass', num_classes=5)
+        self.f1_score = torchmetrics.F1Score(task='multiclass', num_classes=5, average='none')
+        self.prec = torchmetrics.Precision(task='multiclass', num_classes=5, average='none')
+        self.recall = torchmetrics.Recall(task='multiclass', num_classes=5, average='none')
         self.criterion = torch.nn.CrossEntropyLoss()
 
         for param in self.model.encoder.parameters():

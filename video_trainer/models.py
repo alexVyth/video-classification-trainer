@@ -23,6 +23,25 @@ class R2Plus1DFineTuned(torch.nn.Module):
             param.requires_grad = False
 
 
+class MVitV2FineTuned(torch.nn.Module):
+    def __init__(self, num_classes: int = 5, has_frozen_weights: bool = True):
+        super().__init__()
+        self.name = 'mvit_v2_s'
+        self.frozen_weights = has_frozen_weights
+        self.model = torchvision.models.video.mvit_v2_s(weights='DEFAULT')
+        if has_frozen_weights:
+            self._set_parameter_requires_grad()
+        in_features = int(self.model.head[1].in_features)
+        self.model.head[1] = torch.nn.Linear(in_features, num_classes, bias=True)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.model(x)
+
+    def _set_parameter_requires_grad(self) -> None:
+        for param in self.model.parameters():
+            param.requires_grad = False
+
+
 class Encoder3LayerRGB(torch.nn.Module):
     def __init__(self) -> None:
         super().__init__()
@@ -55,6 +74,19 @@ class Decoder3LayerRGB(torch.nn.Module):
         return self.net(x)
 
 
+class Classifier3LayerRGB(torch.nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.net = torch.nn.Sequential(
+            Flatten(),
+            Linear(in_features=1176, out_features=5),
+            ReLU(),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.net(x)
+
+
 class Encoder2LayerRGB(torch.nn.Module):
     def __init__(self) -> None:
         super().__init__()
@@ -77,6 +109,19 @@ class Decoder2LayerRGB(torch.nn.Module):
             ReLU(),
             ConvTranspose3d(in_channels=3, out_channels=3, kernel_size=4, padding=1, stride=2),
             Sigmoid(),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.net(x)
+
+
+class Classifier2LayerRGB(torch.nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.net = torch.nn.Sequential(
+            Flatten(),
+            Linear(in_features=9408, out_features=5),
+            ReLU(),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -147,7 +192,7 @@ class Decoder2Layer(torch.nn.Module):
         return self.net(x)
 
 
-class ClassifierV3(torch.nn.Module):
+class Classifier2Layer(torch.nn.Module):
     def __init__(self) -> None:
         super().__init__()
         self.net = torch.nn.Sequential(
@@ -186,6 +231,19 @@ class Decoder3Layer(torch.nn.Module):
             ReLU(),
             ConvTranspose3d(in_channels=2, out_channels=3, kernel_size=4, padding=1, stride=2),
             Sigmoid(),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.net(x)
+
+
+class Classifier3Layer(torch.nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.net = torch.nn.Sequential(
+            Flatten(),
+            Linear(in_features=392, out_features=5),
+            ReLU(),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -267,10 +325,9 @@ class Classifier3LayerReducedTimeStride(torch.nn.Module):
     def __init__(self) -> None:
         super().__init__()
         self.net = torch.nn.Sequential(
-            Conv3d(1, 1, 4, stride=2),
-            ReLU(),
             Flatten(),
             Linear(in_features=72, out_features=5),
+            ReLU(),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -309,6 +366,18 @@ class Decoder2LayerRGBLinear256(torch.nn.Module):
         return self.net(x)
 
 
+class Classifier2LayerRGBLinear256(torch.nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.net = torch.nn.Sequential(
+            Linear(in_features=256, out_features=5),
+            ReLU(),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.net(x)
+
+
 class Encoder2LayerRGBLinear1024_256(torch.nn.Module):
     def __init__(self) -> None:
         super().__init__()
@@ -339,6 +408,18 @@ class Decoder2LayerRGBLinear1024_256(torch.nn.Module):
             ReLU(),
             ConvTranspose3d(in_channels=3, out_channels=3, kernel_size=4, padding=1, stride=2),
             Sigmoid(),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.net(x)
+
+
+class Classifier2LayerRGBLinear_1024_256(torch.nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.net = torch.nn.Sequential(
+            Linear(in_features=256, out_features=5),
+            ReLU(),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:

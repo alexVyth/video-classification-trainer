@@ -1,4 +1,3 @@
-import multiprocessing
 from typing import Optional
 
 import torch
@@ -54,7 +53,7 @@ class DataModuleClassification(LightningDataModule):
             dataset=self.dataset_train,
             batch_size=settings.BATCH_SIZE,
             shuffle=True,
-            num_workers=multiprocessing.cpu_count(),
+            num_workers=2,
             pin_memory=True,
         )
 
@@ -63,6 +62,6 @@ class DataModuleClassification(LightningDataModule):
             dataset=self.dataset_validation,
             batch_size=settings.BATCH_SIZE,
             shuffle=False,
-            num_workers=multiprocessing.cpu_count(),
+            num_workers=2,
             pin_memory=True,
         )
