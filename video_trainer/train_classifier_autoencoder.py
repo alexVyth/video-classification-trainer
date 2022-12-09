@@ -46,12 +46,12 @@ CONFIG = {
         encoder_model_dir='./mlruns/0/'
         '337bc7b6d9f041039f5a3b970dfbbcc9/checkpoints/epoch=57-step=161240.ckpt',
     ),
-    '3_layer_rgb_reduced': ClassifierConfigSet(
-        encoder=models.Encoder3LayerReducedTimeStride,
-        decoder=models.Decoder3LayerReducedTimeStride,
-        classifier=models.Classifier3LayerReducedTimeStride,
-        encoder_model_dir='',
-    ),
+    # '3_layer_rgb_reduced': ClassifierConfigSet(
+    #     encoder=models.Encoder3LayerReducedTimeStride,
+    #     decoder=models.Decoder3LayerReducedTimeStride,
+    #     classifier=models.Classifier3LayerReducedTimeStride,
+    #     encoder_model_dir='',
+    # ),
     '3_layer_rgb_linear_256': ClassifierConfigSet(
         encoder=models.Encoder2LayerRGBLinear256,
         decoder=models.Decoder2LayerRGBLinear256,
@@ -69,7 +69,7 @@ CONFIG = {
 }
 
 
-def main() -> None:
+def main(config: str) -> None:
 
     data_module_classification = DataModuleClassification()
 
@@ -83,10 +83,11 @@ def main() -> None:
     )
 
     trainer.fit(
-        model=system_classifier_autoencoder.System(CONFIG['3_layer_rgb_linear_1024_256']),
+        model=system_classifier_autoencoder.System(CONFIG[config]),
         datamodule=data_module_classification,
     )
 
 
 if __name__ == '__main__':
-    main()
+    for config in CONFIG.keys():
+        main(config)
