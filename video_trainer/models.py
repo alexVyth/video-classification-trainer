@@ -28,7 +28,7 @@ class MVitV2FineTuned(torch.nn.Module):
         super().__init__()
         self.name = 'mvit_v2_s'
         self.frozen_weights = has_frozen_weights
-        self.model = torchvision.models.video.mvit_v2_s(weights='DEFAULT')
+        self.model = torchvision.models.video.mvit_v2_s(weights=None)
         if has_frozen_weights:
             self._set_parameter_requires_grad()
         in_features = int(self.model.head[1].in_features)
